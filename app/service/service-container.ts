@@ -1,8 +1,10 @@
 import { getApp, type FirebaseApp } from "firebase/app";
+import { AuthService } from "./auth-service";
 
 export class ServiceContainer {
     private static _instance: ServiceContainer | null = null;
-    // Add services here
+    
+    public readonly authService: AuthService;
 
     public static initialize(app?: FirebaseApp) {
         const firebaseApp = app ?? getApp();
@@ -17,6 +19,6 @@ export class ServiceContainer {
     }
 
     private constructor(firebaseApp: FirebaseApp) {
-        // Initialize services here
+        this.authService = new AuthService(firebaseApp);
     }
 }

@@ -1,14 +1,30 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { ServiceContainer } from '~/service/service-container';
 
 const Register: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
     const [bio, setBio] = useState('');
+    const authService = useMemo(() => ServiceContainer.instance().authService, []);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle form submission logic here
+        // register email and password with firebase
+
+        authService.register(email, password)
+            .then((userCredential) => {
+                // Signed in 
+                const user = userCredential.user;
+                console.log('User registered:', user);
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                console.error('Error registering user:', errorCode, errorMessage);
+            });
+        // send uid, username, and bio to backend
         console.log({ email, password, username, bio });
     };
 
