@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { ServiceContainer } from '~/service/service-container';
 
 const LoginPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const authService = useMemo(() => ServiceContainer.instance().authService, []);
 
-    const handleSubmit = (event: React.FormEvent) => {
+    const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        // Handle login logic here
-        console.log('Email:', email);
-        console.log('Password:', password);
+        try {
+            const user = await authService.login(email, password);
+            // TODO: redirect to another page
+            console.log('token', await user.user.getIdToken());
+        } catch (error) {
+            alert('login failed');
+        }
     };
 
     return (
