@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { ServiceContainer } from '~/service/service-container';
+import { registerUser } from '~/service/user-service';
 
 const Register: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [username, setUsername] = useState('');
+    const [displayName, setDisplayName] = useState('');
     const [bio, setBio] = useState('');
     const authService = useMemo(() => ServiceContainer.instance().authService, []);
 
@@ -14,18 +15,26 @@ const Register: React.FC = () => {
         // register email and password with firebase
 
         authService.register(email, password)
-            .then((userCredential) => {
+            .then(async (userCredential) => {
                 // Signed in 
                 const user = userCredential.user;
                 console.log('User registered:', user);
+                const idToken = await user.getIdToken();
+                try {
+                    registerUser(user.uid, email, displayName, bio, idToken)
+                } catch (e) {
+                    // TODO: Maybe delete account from firebase??
+                }
             })
             .catch((error) => {
                 const errorCode = error.code;
                 const errorMessage = error.message;
                 console.error('Error registering user:', errorCode, errorMessage);
+                if (errorCode === "auth/email-already-in-use") {
+                    alert("Email already in use. Please try again with a different email.")
+                }
             });
-        // send uid, username, and bio to backend
-        console.log({ email, password, username, bio });
+        console.log({ email, password, username: displayName, bio });
     };
 
     return (
@@ -59,8 +68,8 @@ const Register: React.FC = () => {
                 <input
                 type="text"
                 placeholder='johndoe'
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
                 required
                 style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
                 />
