@@ -13,3 +13,19 @@ body {
     color-scheme: dark;
   }
 }
+
+input {
+  color: black; /* Ensure input text color is black */
+}
+
+textarea {
+  color: black; /* Ensure textarea text color is black */
+}
+
+input::placeholder {
+  color: #999; /* Ensure placeholder text color is visible */
+}
+
+textarea::placeholder {
+  color: #999; /* Ensure placeholder text color is visible */
+}
