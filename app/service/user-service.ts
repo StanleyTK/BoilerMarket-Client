@@ -1,5 +1,5 @@
 export async function registerUser(uid: string, email: string, displayName: string, bio: string, idToken: string) {
-    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/create_user/`, {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/user/create_user/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
