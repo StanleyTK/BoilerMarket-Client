@@ -5,7 +5,7 @@ export default [
     index("home/home.tsx"),
     route("login", "./login/login.tsx"),
     route("register", "./register/register.tsx"),
-    route("settings", "./settings/settings.tsx"),     
-    route("profile", "./profile/profile.tsx"),  
+    route("settings", "./settings/settings.tsx"),
+    route("u/:uid", "./user/[uid].tsx"),
   ]),
 ] satisfies RouteConfig;
