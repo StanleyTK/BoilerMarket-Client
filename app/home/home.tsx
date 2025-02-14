@@ -11,10 +11,7 @@ const Home: React.FC = () => {
     <div className="bg-gray-800 min-h-screen text-white">
       <main className="p-8 text-center">
         <h2 className="text-2xl font-bold mb-4">
-          {user 
-            ? `Hi ${user.email}, here are your suggested listings!`
-            : 'Welcome to BoilerMarket'
-          }
+          Today's Picks
         </h2>
         <Listings />
       </main>

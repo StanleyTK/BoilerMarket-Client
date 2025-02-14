@@ -14,10 +14,10 @@ const listings: Listing[] = [
   { id: 2, title: 'Used bed for sale', price: '$130', description: 'Bed for sale.' },
   { id: 3, title: 'Xbox for sale', price: '$80', description: 'Xbox for sale.' },
   { id: 4, title: 'Used desk for sale', price: '$80', description: 'Desk for sale.' },
-  { id: 1, title: 'i dunno', price: '$12333', description: 'yolo' },
-  { id: 2, title: 'Used bed for sale', price: '$130', description: 'Bed for sale.' },
-  { id: 3, title: 'Xbox for sale', price: '$80', description: 'Xbox for sale.' },
-  { id: 4, title: 'Used desk for sale', price: '$80', description: 'Desk for sale.' },
+  { id: 5, title: 'i dunno', price: '$12333', description: 'yolo' },
+  { id: 6, title: 'Used bed for sale', price: '$130', description: 'Bed for sale.' },
+  { id: 7, title: 'Xbox for sale', price: '$80', description: 'Xbox for sale.' },
+  { id: 8, title: 'Used desk for sale', price: '$80', description: 'Desk for sale.' },
 
 
 ];
