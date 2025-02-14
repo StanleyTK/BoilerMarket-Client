@@ -8,6 +8,7 @@ export class AuthService {
         this.auth = getAuth(firebaseApp);
     }
 
+
     async getIdToken(): Promise<string | null> {
         if (this.auth) {
             const user = this.auth.currentUser;
