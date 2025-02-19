@@ -1,19 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged, sendEmailVerification } from "firebase/auth";
 import type { User } from "firebase/auth";
 import { getApp } from "firebase/app";
-
-interface UserProfileData {
-  uid: string;
-  email: string;
-  purdueEmail: string | null;
-  displayName: string;
-  rating: number;
-  bio?: string;
-  admin: boolean;
-  banned: boolean;
-}
+import { deleteUserWrapper, getUser } from '~/service/user-service';
+import type { UserProfileData } from "~/service/types";
 
 const UserProfile: React.FC = () => {
   const auth = getAuth(getApp());
@@ -44,22 +35,7 @@ const UserProfile: React.FC = () => {
     const fetchUserData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BASE_URL}/api/user/info/${uidFromURL}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("User not found");
-        }
-
-        const data: UserProfileData = await response.json();
-        setUser(data);
+        getUser(uidFromURL).then((data) => setUser(data));
       } catch (err) {
         setError((err as Error).message);
       } finally {
@@ -112,15 +88,30 @@ const UserProfile: React.FC = () => {
         <div className="mt-6 space-y-4">
           <div className="flex items-center">
             <span className="w-1/3 text-gray-300 font-semibold">Email:</span>
-            <span className="w-2/3">{user?.email}</span>
+            <span className="w-2/3">{user?.email} {firebaseUser?.emailVerified ? "(Verified)" : "(Unverified)"}</span>
           </div>
-
-          {user?.purdueEmail && (
+          {firebaseUser && firebaseUser.uid === uidFromURL && !firebaseUser.emailVerified && (
             <div className="flex items-center">
-              <span className="w-1/3 text-gray-300 font-semibold">Purdue Email:</span>
-              <span className="w-2/3">{user.purdueEmail}</span>
+              <button
+                onClick={async () => {
+                  try {
+                    await sendEmailVerification(firebaseUser);
+                    alert("Verification email sent!");
+                  } catch (err) {
+                    console.error("Error resending verification email:", err);
+                  }
+                }}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+              >
+                Resend Verification Email
+              </button>
             </div>
           )}
+
+          <div className="flex items-center">
+            <span className="w-1/3 text-gray-300 font-semibold">Purdue Email:</span>
+            <span className="w-2/3">{user?.purdueEmail ? user?.purdueEmail : "No Email Found"}</span>
+          </div>
 
           <div className="flex items-center">
             <span className="w-1/3 text-gray-300 font-semibold">Rating:</span>
@@ -134,6 +125,28 @@ const UserProfile: React.FC = () => {
             </div>
           )}
         </div>
+        
+        {firebaseUser && firebaseUser.uid === uidFromURL && (
+          <div className="mt-6">
+            <button
+              onClick={async () => {
+                const confirmed = window.confirm("Are you sure you want to delete your account? This action cannot be undone.");
+                if (confirmed) {
+                  try {
+                    await deleteUserWrapper(firebaseUser);
+                    navigate("/login");
+                  } catch (err) {
+                    console.error("Error deleting user:", err);
+                    alert("An error occurred while deleting your account. Please try again later.");
+                  }
+                }
+              }}
+              className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
+            >
+              Delete Account
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
