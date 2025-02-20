@@ -27,7 +27,7 @@ const Navbar: React.FC = () => {
   const handleProfileClick = () => {
     setMenuOpen(false);
     if (isLoggedIn) {
-      navigate(`/u/${user?.uid}`); 
+      navigate(`/u/${user?.uid}`);
     } else {
       navigate("/login");
     }
@@ -44,13 +44,22 @@ const Navbar: React.FC = () => {
   return (
     <div className="relative">
       <header className="flex items-center justify-between p-4 bg-gray-900 text-white">
-        {/* Logo */}
-        <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}>
-          <img src="/logo.png" alt="BoilerMarket Logo" className="h-12 mr-2" />
-          <span className="text-xl font-bold">BoilerMarket</span>
+        {/* Left Section: Logo */}
+        <div className="flex items-center">
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => navigate("/")}
+          >
+            <img
+              src="/logo.png"
+              alt="BoilerMarket Logo"
+              className="h-12 mr-2"
+            />
+            <span className="text-xl font-bold">BoilerMarket</span>
+          </div>
         </div>
 
-        {/* Search Bar */}
+        {/* Center Section: Search Bar */}
         <form onSubmit={handleSearchSubmit} className="relative w-1/3">
           <input
             type="text"
@@ -77,7 +86,7 @@ const Navbar: React.FC = () => {
           </button>
         </form>
 
-        {/* Profile & Menu */}
+        {/* Right Section: Profile & Dropdown Menu */}
         <div className="flex items-center space-x-4">
           <button
             onClick={handleProfileClick}
@@ -85,7 +94,6 @@ const Navbar: React.FC = () => {
           >
             View My Profile
           </button>
-
           <div className="cursor-pointer p-2" onClick={toggleMenu}>
             <svg
               className="w-6 h-6 text-white"
@@ -107,6 +115,7 @@ const Navbar: React.FC = () => {
       {/* Dropdown Menu */}
       {menuOpen && (
         <div
+          onMouseLeave={() => setMenuOpen(false)}
           className="absolute right-4 mt-2 w-48 bg-white rounded shadow-lg z-50 transition transform duration-300 origin-top-right"
           style={{ animation: "fadeInScale 0.3s forwards" }}
         >

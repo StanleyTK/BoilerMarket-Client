@@ -136,8 +136,8 @@ const UserProfile: React.FC = () => {
         {firebaseUser && firebaseUser.uid === uidFromURL && (
         <div className="mt-6 flex space-x-4">
          <button
-            onClick={() => navigate("/editaccount")}
-            className="bg-clear-500 hover:bg-clear-600 text-white py-2 px-4 rounded border border-white"
+            onClick={() => navigate("/u/" + uidFromURL + "/edit")}
+            className="bg-clear-500 hover:bg-gray-600 text-white py-2 px-4 rounded border border-white"
           >
             Edit Account
           </button>
