@@ -2,13 +2,13 @@ import { initializeApp } from "firebase/app";
 import { ServiceContainer } from "./service/service-container";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCxr5Z5kJ_jSatKWwpeZq8bzeiIt7vgH_g",
-  authDomain: "boilermarket-6d363.firebaseapp.com",
-  projectId: "boilermarket-6d363",
-  storageBucket: "boilermarket-6d363.firebasestorage.app",
-  messagingSenderId: "478895467699",
-  appId: "1:478895467699:web:8ccb8de0db43defa0514c6",
-  measurementId: "G-1M3BL3H1CT"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 export const app = initializeApp(firebaseConfig);

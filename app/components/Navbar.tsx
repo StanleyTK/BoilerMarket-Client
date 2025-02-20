@@ -18,7 +18,7 @@ const Navbar: React.FC = () => {
     try {
       await signOut(auth);
       setMenuOpen(false);
-      window.location.reload(); 
+      navigate("/login");
     } catch (error) {
       console.error("Error signing out", error);
     }
