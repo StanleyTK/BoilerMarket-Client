@@ -35,7 +35,12 @@ const UserProfile: React.FC = () => {
     const fetchUserData = async () => {
       setLoading(true);
       try {
-        getUser(uidFromURL).then((data) => setUser(data));
+        const data = getUser(uidFromURL);
+        if ((await data).email == null) {
+          setError("User not found");
+        } else {
+          setUser(await data);
+        }
       } catch (err) {
         setError((err as Error).message);
       } finally {
@@ -65,6 +70,8 @@ const UserProfile: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-800 text-white p-6 flex flex-col items-center relative">
       <div className="w-full max-w-2xl bg-gray-700 shadow-lg rounded-xl p-8 relative">
+
+
         {/* Plus Button: Only visible if this is your profile */}
         {firebaseUser && firebaseUser.uid === uidFromURL && (
           <button
@@ -127,26 +134,16 @@ const UserProfile: React.FC = () => {
         </div>
         
         {firebaseUser && firebaseUser.uid === uidFromURL && (
-          <div className="mt-6">
-            <button
-              onClick={async () => {
-                const confirmed = window.confirm("Are you sure you want to delete your account? This action cannot be undone.");
-                if (confirmed) {
-                  try {
-                    await deleteUserWrapper(firebaseUser);
-                    navigate("/login");
-                  } catch (err) {
-                    console.error("Error deleting user:", err);
-                    alert("An error occurred while deleting your account. Please try again later.");
-                  }
-                }
-              }}
-              className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
-            >
-              Delete Account
-            </button>
-          </div>
-        )}
+        <div className="mt-6 flex space-x-4">
+         <button
+            onClick={() => navigate("/editaccount")}
+            className="bg-clear-500 hover:bg-clear-600 text-white py-2 px-4 rounded border border-white"
+          >
+            Edit Account
+          </button>
+        </div>
+      )}
+        
       </div>
     </div>
   );

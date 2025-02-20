@@ -1,5 +1,5 @@
-"use client";
-import React from "react";
+
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBell,
@@ -7,9 +7,51 @@ import {
   faHeadphones,
   faRightToBracket,
   faSun,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router";
+import { deleteUserWrapper, getUser } from "~/service/user-service";
+import { getAuth, onAuthStateChanged, type User } from "firebase/auth";
+import { getApp } from "firebase/app";
 
 const Settings: React.FC = () => {
+  const navigate = useNavigate();
+  const [firebaseUser, setFirebaseUser] = useState<User>();
+  const auth = getAuth(getApp());
+
+
+   // Listen for Firebase authentication state changes
+   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setFirebaseUser(user);
+      }
+    });
+    return () => unsubscribe();
+  }, [auth]);
+
+  const handleDelete = async () => {
+    if (!firebaseUser) {
+      alert("User not found.");
+      return;
+    }
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+    if (confirmed) {
+      try {
+        await deleteUserWrapper(firebaseUser);
+        navigate("/login");
+      } catch (err) {
+        console.error("Error deleting user:", err);
+        alert(
+          "An error occurred while deleting your account. Please try again later."
+        );
+      }
+    }
+  };
+  
+
   const toggleTheme = () => {
     // Dummy function for toggling Light/Dark Mode
     console.log("Toggling Light/Dark mode");
@@ -56,7 +98,6 @@ const Settings: React.FC = () => {
       {/* Container for the options */}
       <div className="w-full max-w-xl space-y-5">
         <OptionButton
-          // Changed icon to faSun (can be replaced with a moon icon if desired)
           icon={faSun}
           title="Light Mode / Dark Mode"
           description="Switch between light and dark themes"
@@ -74,7 +115,12 @@ const Settings: React.FC = () => {
           description="Confirm your email address to ensure account security"
           onClick={() => console.log("Verify Email clicked")}
         />
- 
+        <OptionButton
+          icon={faTrash}
+          title="Delete account"
+          description="Delete your account permanently"
+          onClick={handleDelete}
+        />
         <OptionButton
           icon={faRightToBracket}
           title="Log Out"
