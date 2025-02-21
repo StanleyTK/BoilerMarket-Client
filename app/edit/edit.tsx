@@ -4,11 +4,13 @@ import { getAuth } from "firebase/auth";
 import { getApp } from "firebase/app";
 import { getUser, updateUser } from "~/service/user-service";
 import type { UserProfileData } from "~/service/types";
+import { useTheme } from "~/components/ThemeContext";
 
 const EditAccount: React.FC = () => {
   const auth = getAuth(getApp());
   const { uid } = useParams<{ uid: string }>();
   const navigate = useNavigate();
+  const { theme } = useTheme();
 
   const [user, setUser] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,14 +53,12 @@ const EditAccount: React.FC = () => {
     if (!uid) return;
 
     try {
-      // Get the current Firebase user token
       const currentUser = auth.currentUser;
       if (!currentUser) {
         throw new Error("User not authenticated");
       }
       const idToken = await currentUser.getIdToken();
 
-      // Call updateUser with the updated fields
       await updateUser(idToken, { displayName, purdueEmail, bio });
       navigate(`/u/${uid}`); // Navigate back to the profile page after saving
     } catch (err) {
@@ -68,7 +68,11 @@ const EditAccount: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-800 text-white">
+      <div
+        className={`min-h-screen flex items-center justify-center ${
+          theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"
+        }`}
+      >
         <p>Loading profile...</p>
       </div>
     );
@@ -76,52 +80,82 @@ const EditAccount: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-800 text-white">
+      <div
+        className={`min-h-screen flex items-center justify-center ${
+          theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"
+        }`}
+      >
         <p className="text-red-400 text-lg">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-800 text-white p-6 flex flex-col items-center">
-      <div className="w-full max-w-2xl bg-gray-700 shadow-lg rounded-xl p-8">
+    <div
+      className={`min-h-screen ${
+        theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"
+      } p-6 flex flex-col items-center`}
+    >
+      <div
+        className={`w-full max-w-2xl ${
+          theme === "dark" ? "bg-gray-700" : "bg-gray-300"
+        } shadow-lg rounded-xl p-8`}
+      >
         <h1 className="text-2xl font-bold mb-6">Edit Account</h1>
         <div className="space-y-4">
           {/* Display Name Field */}
           <div>
-            <label className="block text-gray-300 font-semibold mb-1">
+            <label
+              className={`block ${
+                theme === "dark" ? "text-gray-300" : "text-gray-700"
+              } font-semibold mb-1`}
+            >
               Display Name
             </label>
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full p-2 rounded bg-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                theme === "dark" ? "bg-gray-600 text-white" : "bg-gray-200 text-black"
+              }`}
             />
           </div>
 
           {/* Purdue Email Field */}
           <div>
-            <label className="block text-gray-300 font-semibold mb-1">
+            <label
+              className={`block ${
+                theme === "dark" ? "text-gray-300" : "text-gray-700"
+              } font-semibold mb-1`}
+            >
               Purdue Email
             </label>
             <input
               type="email"
               value={purdueEmail}
               onChange={(e) => setPurdueEmail(e.target.value)}
-              className="w-full p-2 rounded bg-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                theme === "dark" ? "bg-gray-600 text-white" : "bg-gray-200 text-black"
+              }`}
             />
           </div>
 
           {/* Bio Field */}
           <div>
-            <label className="block text-gray-300 font-semibold mb-1">
+            <label
+              className={`block ${
+                theme === "dark" ? "text-gray-300" : "text-gray-700"
+              } font-semibold mb-1`}
+            >
               Bio
             </label>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              className="w-full p-2 rounded bg-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                theme === "dark" ? "bg-gray-600 text-white" : "bg-gray-200 text-black"
+              }`}
               rows={4}
             />
           </div>
