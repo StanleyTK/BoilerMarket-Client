@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { getAuth, onAuthStateChanged, sendEmailVerification } from "firebase/auth";
 import type { User } from "firebase/auth";
 import { getApp } from "firebase/app";
-import { deleteUserWrapper, getUser } from '~/service/user-service';
+import { deleteUserWrapper, getUser } from "~/service/user-service";
 import type { UserProfileData } from "~/service/types";
+import { useTheme } from "~/components/ThemeContext";
 
 const UserProfile: React.FC = () => {
   const auth = getAuth(getApp());
@@ -14,6 +15,7 @@ const UserProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { theme } = useTheme();
 
   // Listen for Firebase authentication state changes
   useEffect(() => {
@@ -35,11 +37,11 @@ const UserProfile: React.FC = () => {
     const fetchUserData = async () => {
       setLoading(true);
       try {
-        const data = getUser(uidFromURL);
-        if ((await data).email == null) {
+        const data = await getUser(uidFromURL);
+        if (data.email == null) {
           setError("User not found");
         } else {
-          setUser(await data);
+          setUser(data);
         }
       } catch (err) {
         setError((err as Error).message);
@@ -51,9 +53,10 @@ const UserProfile: React.FC = () => {
     fetchUserData();
   }, [uidFromURL]);
 
+  // Loading and error states
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-800 text-white">
+      <div className={`min-h-screen flex items-center justify-center ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"}`}>
         <p>Loading profile...</p>
       </div>
     );
@@ -61,17 +64,15 @@ const UserProfile: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-800 text-white">
+      <div className={`min-h-screen flex items-center justify-center ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"}`}>
         <p className="text-red-400 text-lg">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-800 text-white p-6 flex flex-col items-center relative">
-      <div className="w-full max-w-2xl bg-gray-700 shadow-lg rounded-xl p-8 relative">
-
-
+    <div className={`min-h-screen ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"} p-6 flex flex-col items-center relative`}>
+      <div className={`w-full max-w-2xl ${theme === "dark" ? "bg-gray-700" : "bg-gray-300"} shadow-lg rounded-xl p-8 relative`}>
         {/* Plus Button: Only visible if this is your profile */}
         {firebaseUser && firebaseUser.uid === uidFromURL && (
           <button
@@ -83,7 +84,7 @@ const UserProfile: React.FC = () => {
           </button>
         )}
 
-        {/* Avatar */}
+        {/* Avatar and Display Name */}
         <div className="flex flex-col items-center">
           <div className="w-24 h-24 bg-blue-500 text-white text-3xl font-bold rounded-full flex items-center justify-center shadow-lg">
             {user?.displayName?.charAt(0).toUpperCase()}
@@ -94,9 +95,12 @@ const UserProfile: React.FC = () => {
         {/* User Info Section */}
         <div className="mt-6 space-y-4">
           <div className="flex items-center">
-            <span className="w-1/3 text-gray-300 font-semibold">Email:</span>
-            <span className="w-2/3">{user?.email} {firebaseUser?.emailVerified ? "(Verified)" : "(Unverified)"}</span>
+            <span className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"} w-1/3 font-semibold`}>Email:</span>
+            <span className="w-2/3">
+              {user?.email} {firebaseUser?.emailVerified ? "(Verified)" : "(Unverified)"}
+            </span>
           </div>
+
           {firebaseUser && firebaseUser.uid === uidFromURL && !firebaseUser.emailVerified && (
             <div className="flex items-center">
               <button
@@ -116,34 +120,37 @@ const UserProfile: React.FC = () => {
           )}
 
           <div className="flex items-center">
-            <span className="w-1/3 text-gray-300 font-semibold">Purdue Email:</span>
-            <span className="w-2/3">{user?.purdueEmail ? user?.purdueEmail : "No Email Found"}</span>
+            <span className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"} w-1/3 font-semibold`}>Purdue Email:</span>
+            <span className="w-2/3">{user?.purdueEmail ? user.purdueEmail : "No Email Found"}</span>
           </div>
 
           <div className="flex items-center">
-            <span className="w-1/3 text-gray-300 font-semibold">Rating:</span>
+            <span className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"} w-1/3 font-semibold`}>Rating:</span>
             <span className="w-2/3">{user?.rating.toFixed(1)} ⭐</span>
           </div>
 
           {user?.bio && (
-            <div>
-              <h3 className="text-gray-300 font-semibold">Bio:</h3>
-              <p className="bg-gray-600 p-4 rounded-lg mt-1">{user.bio}</p>
-            </div>
-          )}
+          <div>
+            <h3 className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"} font-semibold`}>Bio:</h3>
+            <p className={`${theme === "dark" ? "bg-gray-800" : "bg-gray-200"} p-4 rounded-lg mt-1`}>
+              {user.bio}
+            </p>
+          </div>
+        )}
         </div>
-        
+
+
+        {/* Edit Account Button */}
         {firebaseUser && firebaseUser.uid === uidFromURL && (
-        <div className="mt-6 flex space-x-4">
-         <button
-            onClick={() => navigate("/u/" + uidFromURL + "/edit")}
-            className="bg-clear-500 hover:bg-gray-600 text-white py-2 px-4 rounded border border-white"
-          >
-            Edit Account
-          </button>
-        </div>
-      )}
-        
+          <div className="mt-6 flex space-x-4">
+            <button
+              onClick={() => navigate(`/u/${uidFromURL}/edit`)}
+              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded border border-white"
+            >
+              Edit Account
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
