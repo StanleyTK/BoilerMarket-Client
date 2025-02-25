@@ -1,5 +1,6 @@
 import { deleteUser, type User } from "firebase/auth";
 import type { UserProfileData } from "./types";
+import crypto from "crypto";
 
 export async function registerUser(uid: string, email: string, displayName: string, bio: string, idToken: string) {
     const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/user/create_user/`, {
@@ -81,4 +82,41 @@ export async function deleteUserWrapper(user: User) {
     await deleteUserFromDatabase(user.uid, await user.getIdToken());
     await deleteUser(user);
     // delete listings from database
+}
+
+export async function sendPurdueVerification(uid: string, purdueEmail: string, idToken: string) {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/user/send_purdue_verification/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ uid, purdueEmail }),
+    });
+
+    if (!response.ok) {
+        if (response.status === 429) {
+            throw new Error('Verification email sent too recently');
+        }
+        throw new Error('Failed to send Purdue verification');
+    }
+
+    return response.json();
+}
+
+export async function verifyPurdueEmailToken(uid: string, token: string, idToken: string) {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/user/verify_purdue_email/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            "Authorization": `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ uid, token }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to verify Purdue email');
+    }
+
+    return response.json();
 }
