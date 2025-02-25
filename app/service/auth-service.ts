@@ -1,5 +1,5 @@
 import type { FirebaseApp } from "firebase/app";
-import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, type Auth } from "firebase/auth";
+import { createUserWithEmailAndPassword, getAuth, sendEmailVerification, signInWithEmailAndPassword, type Auth } from "firebase/auth";
 
 export class AuthService {
     private readonly auth: Auth;
@@ -20,7 +20,11 @@ export class AuthService {
     }
 
     async register(email: string, password: string) {
-        return await createUserWithEmailAndPassword(this.auth, email, password);
+        const userCred =  await createUserWithEmailAndPassword(this.auth, email, password);
+        sendEmailVerification(userCred.user).then(() => {
+            console.log('Email verification sent');
+        });
+        return userCred;
     }
 
     async login(email: string, password: string) {

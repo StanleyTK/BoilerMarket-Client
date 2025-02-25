@@ -1,17 +1,17 @@
-import React from 'react';
-import { Outlet } from 'react-router';
-import Navbar from './Navbar';
-import Footer from './Footer';
+// MainLayout.tsx
+import React from "react";
+import Navbar from "./Navbar";
+import Footer from "./Footer";
+import { ThemeProvider } from "./ThemeContext";
 
 const MainLayout: React.FC = () => {
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Navbar stays at the top */}
-      <Navbar />
-      
-
-      <Footer />
-    </div>
+    <ThemeProvider>
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-800 text-black dark:text-white">
+        <Navbar />        
+        <Footer />
+      </div>
+    </ThemeProvider>
   );
 };
 

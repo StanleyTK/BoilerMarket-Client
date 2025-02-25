@@ -43,6 +43,13 @@ const LoginPage: React.FC = () => {
         <button type="submit" className="w-full py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition">
           Login
         </button>
+        <button
+          type="button"
+          onClick={() => navigate('/register')}
+          className="w-full mt-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-400 transition"
+        >
+          Register
+        </button>
       </form>
     </div>
   );

@@ -1,5 +1,4 @@
-"use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBell,
@@ -7,16 +6,57 @@ import {
   faHeadphones,
   faRightToBracket,
   faSun,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router";
+import { deleteUserWrapper } from "~/service/user-service";
+import { getAuth, onAuthStateChanged, signOut, type User } from "firebase/auth";
+import { getApp } from "firebase/app";
+import { useTheme } from "~/components/ThemeContext";
 
 const Settings: React.FC = () => {
-  const toggleTheme = () => {
-    // Dummy function for toggling Light/Dark Mode
-    console.log("Toggling Light/Dark mode");
+  const navigate = useNavigate();
+  const [firebaseUser, setFirebaseUser] = useState<User>();
+  const auth = getAuth(getApp());
+
+  // Use the global theme state and toggle function from ThemeContext
+  const { theme, toggleTheme } = useTheme();
+
+  // Listen for Firebase authentication state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setFirebaseUser(user);
+      }
+    });
+    return () => unsubscribe();
+  }, [auth]);
+
+  const handleDelete = async () => {
+    if (!firebaseUser) {
+      alert("User not found.");
+      return;
+    }
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+    if (confirmed) {
+      try {
+        await deleteUserWrapper(firebaseUser);
+        navigate("/login");
+      } catch (err) {
+        // In case of error, sign out and navigate to login
+        await signOut(auth);
+        navigate("/login");
+        alert(
+          "An error occurred while deleting your account. Please try again later."
+        );
+      }
+    }
   };
 
-  const handleLogout = () => {
-    console.log("Logging out");
+  const handleLogout = async () => {
+    await signOut(auth);
   };
 
   // OptionButton component for each settings option
@@ -35,7 +75,6 @@ const Settings: React.FC = () => {
       className="w-full border border-gray-600 rounded hover:bg-gray-700 cursor-pointer p-4 flex items-center space-x-4 transition-all"
       onClick={onClick}
     >
-      {/* Icon container with fixed dimensions */}
       <div className="w-8 h-8 flex items-center justify-center">
         <FontAwesomeIcon
           icon={icon}
@@ -51,16 +90,18 @@ const Settings: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-800 text-white p-8 flex flex-col items-center">
+    <div
+      className={`min-h-screen ${
+        theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"
+      } p-8 flex flex-col items-center`}
+    >
       <h1 className="text-3xl font-bold mb-6">Settings</h1>
-      {/* Container for the options */}
       <div className="w-full max-w-xl space-y-5">
         <OptionButton
-          // Changed icon to faSun (can be replaced with a moon icon if desired)
           icon={faSun}
           title="Light Mode / Dark Mode"
           description="Switch between light and dark themes"
-          onClick={toggleTheme}
+          onClick={toggleTheme} // Use context toggle
         />
         <OptionButton
           icon={faBell}
@@ -74,7 +115,12 @@ const Settings: React.FC = () => {
           description="Confirm your email address to ensure account security"
           onClick={() => console.log("Verify Email clicked")}
         />
- 
+        <OptionButton
+          icon={faTrash}
+          title="Delete account"
+          description="Delete your account permanently"
+          onClick={handleDelete}
+        />
         <OptionButton
           icon={faRightToBracket}
           title="Log Out"

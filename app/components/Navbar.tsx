@@ -18,7 +18,7 @@ const Navbar: React.FC = () => {
     try {
       await signOut(auth);
       setMenuOpen(false);
-      window.location.reload(); 
+      navigate("/login");
     } catch (error) {
       console.error("Error signing out", error);
     }
@@ -27,7 +27,7 @@ const Navbar: React.FC = () => {
   const handleProfileClick = () => {
     setMenuOpen(false);
     if (isLoggedIn) {
-      navigate(`/u/${user?.uid}`); 
+      navigate(`/u/${user?.uid}`);
     } else {
       navigate("/login");
     }
@@ -37,27 +37,32 @@ const Navbar: React.FC = () => {
     event.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery(""); // Clear search bar after navigating
+      setSearchQuery("");
     }
   };
 
   return (
     <div className="relative">
-      <header className="flex items-center justify-between p-4 bg-gray-900 text-white">
-        {/* Logo */}
-        <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}>
-          <img src="/logo.png" alt="BoilerMarket Logo" className="h-12 mr-2" />
-          <span className="text-xl font-bold">BoilerMarket</span>
+      <header className="flex items-center justify-between p-4 bg-gray-500 text-white">
+        {/* Left Section: Logo */}
+        <div className="flex items-center">
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => navigate("/")}
+          >
+            <img src="/logo.png" alt="BoilerMarket Logo" className="h-12 mr-2" />
+            <span className="text-xl font-bold">BoilerMarket</span>
+          </div>
         </div>
 
-        {/* Search Bar */}
+        {/* Center Section: Search Bar */}
         <form onSubmit={handleSearchSubmit} className="relative w-1/3">
           <input
             type="text"
             placeholder="Search listings..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full py-2 pl-10 pr-4 rounded-full bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full py-2 pl-10 pr-4 rounded-full focus:outline-none focus:ring-2 bg-gray-500 text-white focus:ring-blue-500"
           />
           <button type="submit" className="absolute inset-y-0 left-0 flex items-center pl-3">
             <svg
@@ -77,15 +82,11 @@ const Navbar: React.FC = () => {
           </button>
         </form>
 
-        {/* Profile & Menu */}
+        {/* Right Section: Profile & Dropdown Menu */}
         <div className="flex items-center space-x-4">
-          <button
-            onClick={handleProfileClick}
-            className="text-white font-semibold hover:underline"
-          >
-            View My Profile
+          <button onClick={handleProfileClick} className="font-semibold hover:underline">
+            {isLoggedIn ? "View My Profile" : "Login"}
           </button>
-
           <div className="cursor-pointer p-2" onClick={toggleMenu}>
             <svg
               className="w-6 h-6 text-white"
@@ -93,12 +94,7 @@ const Navbar: React.FC = () => {
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
           </div>
         </div>
@@ -107,20 +103,20 @@ const Navbar: React.FC = () => {
       {/* Dropdown Menu */}
       {menuOpen && (
         <div
-          className="absolute right-4 mt-2 w-48 bg-white rounded shadow-lg z-50 transition transform duration-300 origin-top-right"
-          style={{ animation: "fadeInScale 0.3s forwards" }}
+          onMouseLeave={() => setMenuOpen(false)}
+          className="absolute right-4 mt-2 w-48 bg-gray-500 text-white rounded shadow-lg z-50 transition transform duration-300 origin-top-right"
         >
           {isLoggedIn ? (
             <>
               <button
                 onClick={() => navigate("/settings")}
-                className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                className="block w-full text-left px-4 py-2 hover:bg-gray-400"
               >
                 Settings
               </button>
               <button
                 onClick={handleLogout}
-                className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                className="block w-full text-left px-4 py-2 hover:bg-gray-400"
               >
                 Logout
               </button>
@@ -129,13 +125,13 @@ const Navbar: React.FC = () => {
             <>
               <button
                 onClick={() => navigate("/login")}
-                className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                className="block w-full text-left px-4 py-2 hover:bg-gray-400"
               >
                 Login
               </button>
               <button
                 onClick={() => navigate("/register")}
-                className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                className="block w-full text-left px-4 py-2 hover:bg-gray-400"
               >
                 Sign Up
               </button>
