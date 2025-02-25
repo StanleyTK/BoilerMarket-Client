@@ -8,5 +8,6 @@ export default [
     route("settings", "./settings/settings.tsx"),
     route("u/:uid", "./user/[uid].tsx"),
     route("u/:uid/edit", "./edit/edit.tsx"),
+    route("search", "./search/search.tsx"),
   ]),
 ] satisfies RouteConfig;

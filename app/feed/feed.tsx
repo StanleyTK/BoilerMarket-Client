@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { getAuth } from 'firebase/auth';
-import Listings from './components/Listings';
+import Listings from '../components/Listings';
 import { useTheme } from '~/components/ThemeContext';
 
 const Feed: React.FC = () => {
