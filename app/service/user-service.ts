@@ -35,6 +35,29 @@ async function deleteUserFromDatabase(uid: string, idToken: string) {
 
     return response.json();
 }
+export async function updateUser(
+    idToken: string,
+    updateData: { displayName: string; purdueEmail: string; bio: string }
+  ) {
+    const response = await fetch(
+      `${import.meta.env.VITE_BASE_URL}/api/user/update/`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify(updateData),
+      }
+    );
+  
+    if (!response.ok) {
+      throw new Error("Failed to update user");
+    }
+  
+    return response.json();
+  }
+
 
 export async function getUser(uid: string): Promise<UserProfileData> {
     const response = await fetch(
