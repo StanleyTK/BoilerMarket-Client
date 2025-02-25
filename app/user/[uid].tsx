@@ -62,6 +62,10 @@ const UserProfile: React.FC = () => {
       alert("You must be logged in to verify your Purdue email.");
       return;
     }
+    if (!purdueEmail.endsWith("@purdue.edu")) {
+      alert("Purdue email must end with '@purdue.edu'.");
+      return;
+    }
     const idToken = await firebaseUser.getIdToken();
     sendPurdueVerification(firebaseUser.uid, purdueEmail, idToken)
       .then(() => {
