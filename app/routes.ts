@@ -7,5 +7,6 @@ export default [
     route("register", "./register/register.tsx"),
     route("settings", "./settings/settings.tsx"),
     route("u/:uid", "./user/[uid].tsx"),
+    route("verify/:token", "./user/[token].tsx"),
   ]),
 ] satisfies RouteConfig;
