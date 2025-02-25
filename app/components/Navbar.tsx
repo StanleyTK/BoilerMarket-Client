@@ -1,16 +1,18 @@
 import React, { useState } from "react";
-import { useNavigate, Outlet } from "react-router";
+import { useNavigate, Outlet, useLocation } from "react-router";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getAuth, signOut } from "firebase/auth";
 import { getApp } from "firebase/app";
+import { useSearch } from "./MainLayout";
 
 const Navbar: React.FC = () => {
   const auth = getAuth(getApp());
   const [user] = useAuthState(auth);
   const isLoggedIn = !!user;
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { searchQuery, setSearchQuery, handleSearch } = useSearch();
 
   const toggleMenu = () => setMenuOpen((prev) => !prev);
 
@@ -33,11 +35,12 @@ const Navbar: React.FC = () => {
     }
   };
 
-  const handleSearchSubmit = (event: React.FormEvent) => {
+  const handleSearchSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (searchQuery.trim()) {
+    if (location.pathname !== "/search") {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
+    } else {
+      await handleSearch();
     }
   };
 
@@ -94,7 +97,7 @@ const Navbar: React.FC = () => {
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </div>
         </div>
