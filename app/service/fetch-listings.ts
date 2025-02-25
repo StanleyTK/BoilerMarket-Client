@@ -29,3 +29,20 @@ export async function fetchListingByKeyword(keyword: string, idToken: string) {
 
     return response.json();
 }
+
+
+export async function fetchTopListings() {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/listing/homepage`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed');
+    }
+
+    return response.json();
+}
+
