@@ -2,7 +2,7 @@ import React from "react";
 import { useState } from "react";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { getAuth } from 'firebase/auth';
-import Listings from '../components/Listings'
+import Listings from '../components/TopListings'
 import { fetchAllListings, fetchListingByKeyword } from "../service/fetch-listings";
 import { getApp } from "firebase/app";
 
