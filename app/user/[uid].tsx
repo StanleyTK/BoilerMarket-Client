@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router";
 import { getAuth, onAuthStateChanged, sendEmailVerification } from "firebase/auth";
 import type { User } from "firebase/auth";
 import { getApp } from "firebase/app";
-import { deleteUserWrapper, getUser } from '~/service/user-service';
+import { deleteUserWrapper, getUser, sendPurdueVerification } from '~/service/user-service';
 import type { UserProfileData } from "~/service/types";
 
 const UserProfile: React.FC = () => {
@@ -13,6 +13,7 @@ const UserProfile: React.FC = () => {
   const [user, setUser] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [purdueEmail, setPurdueEmail] = useState<string>("");
   const navigate = useNavigate();
 
   // Listen for Firebase authentication state changes
@@ -35,7 +36,10 @@ const UserProfile: React.FC = () => {
     const fetchUserData = async () => {
       setLoading(true);
       try {
-        getUser(uidFromURL).then((data) => setUser(data));
+        getUser(uidFromURL).then((data) => {
+          setUser(data);
+          setPurdueEmail(data.purdueEmail || "");
+        });
       } catch (err) {
         setError((err as Error).message);
       } finally {
@@ -45,6 +49,22 @@ const UserProfile: React.FC = () => {
 
     fetchUserData();
   }, [uidFromURL]);
+
+  const handlePurdueEmailVerification = async () => {
+    if (!firebaseUser) {
+      alert("You must be logged in to verify your Purdue email.");
+      return;
+    }
+    const idToken = await firebaseUser.getIdToken();
+    sendPurdueVerification(firebaseUser.uid, purdueEmail, idToken)
+      .then(() => {
+        alert("Verification email sent!");
+      })
+      .catch((err: Error) => {
+        console.error("Error sending verification email:", err);
+        alert(err.message);
+      });
+  };
 
   if (loading) {
     return (
@@ -110,7 +130,27 @@ const UserProfile: React.FC = () => {
 
           <div className="flex items-center">
             <span className="w-1/3 text-gray-300 font-semibold">Purdue Email:</span>
-            <span className="w-2/3">{user?.purdueEmail ? user?.purdueEmail : "No Email Found"}</span>
+            {user?.purdueEmailVerified ? (
+              <span className="w-2/3">{user?.purdueEmail} (Verified)</span>
+            ) : (
+              <div>
+                <input
+                  type="email"
+                  placeholder="@purdue.edu"
+                  defaultValue={purdueEmail}
+                  onChange={(e) => setPurdueEmail(e.target.value)}
+                  className="w-2/3 p-2 border border-gray-300 rounded"
+                />
+                <button
+                  onClick={() => {
+                    handlePurdueEmailVerification();
+                  }}
+                  className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded ml-2"
+                >
+                  Verify
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center">
