@@ -3,9 +3,10 @@ import { useState } from "react";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { getAuth } from 'firebase/auth';
 import Listings from '../components/Listings'
-import { fetchAllListings, fetchListingByKeyword } from "./fetch-listings";
+import { fetchAllListings, fetchListingByKeyword } from "../service/fetch-listings";
 import { getApp } from "firebase/app";
 
+import './search.css';
 
 
 const Search: React.FC = () => {
@@ -50,7 +51,7 @@ const Search: React.FC = () => {
                 placeholder="Search..."
                 style={{ padding: '10px', width: '200px' }}
             />
-            <button onClick={handleSearch} style={{ padding: '10px' }}>
+            <button onClick={handleSearch} className="search-button">
                 Search
             </button>
         </div>
