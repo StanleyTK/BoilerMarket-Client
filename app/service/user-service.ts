@@ -97,6 +97,8 @@ export async function sendPurdueVerification(uid: string, purdueEmail: string, i
     if (!response.ok) {
         if (response.status === 429) {
             throw new Error('Verification email sent too recently');
+        } else if (response.status === 400) {
+            throw new Error('This Purdue email is already in use');
         }
         throw new Error('Failed to send Purdue verification');
     }
