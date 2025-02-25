@@ -101,19 +101,7 @@ const Settings: React.FC = () => {
           icon={faSun}
           title="Light Mode / Dark Mode"
           description="Switch between light and dark themes"
-          onClick={toggleTheme} // Use context toggle
-        />
-        <OptionButton
-          icon={faBell}
-          title="Notifications"
-          description="Message & Trip Notifications"
-          onClick={() => console.log("Notifications clicked")}
-        />
-        <OptionButton
-          icon={faEnvelope}
-          title="Verify Email"
-          description="Confirm your email address to ensure account security"
-          onClick={() => console.log("Verify Email clicked")}
+          onClick={toggleTheme}
         />
         <OptionButton
           icon={faTrash}
