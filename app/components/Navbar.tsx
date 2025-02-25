@@ -3,6 +3,7 @@ import { useNavigate, Outlet, useLocation } from "react-router";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getAuth, signOut } from "firebase/auth";
 import { getApp } from "firebase/app";
+import { useSearch } from "./MainLayout";
 
 const Navbar: React.FC = () => {
   const auth = getAuth(getApp());
@@ -11,7 +12,7 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { searchQuery, setSearchQuery, handleSearch } = useSearch();
 
   const toggleMenu = () => setMenuOpen((prev) => !prev);
 
@@ -34,11 +35,12 @@ const Navbar: React.FC = () => {
     }
   };
 
-  const handleSearchSubmit = (event: React.FormEvent) => {
+  const handleSearchSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (searchQuery.trim()) {
+    if (location.pathname !== "/search") {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
+    } else {
+      await handleSearch();
     }
   };
 
@@ -57,33 +59,31 @@ const Navbar: React.FC = () => {
         </div>
 
         {/* Center Section: Search Bar */}
-        {location.pathname !== "/search" && (
-          <form onSubmit={handleSearchSubmit} className="relative w-1/3">
-            <input
-              type="text"
-              placeholder="Search listings..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-2 pl-10 pr-4 rounded-full focus:outline-none focus:ring-2 bg-gray-500 text-white focus:ring-blue-500"
-            />
-            <button type="submit" className="absolute inset-y-0 left-0 flex items-center pl-3">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-5 h-5 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M10 4a6 6 0 016 6 6 6 0 01-1.254 3.68l5.017 5.018a1 1 0 01-1.414 1.414l-5.018-5.017A6 6 0 1110 4z"
-                />
-              </svg>
-            </button>
-          </form>
-        )}
+        <form onSubmit={handleSearchSubmit} className="relative w-1/3">
+          <input
+            type="text"
+            placeholder="Search listings..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full py-2 pl-10 pr-4 rounded-full focus:outline-none focus:ring-2 bg-gray-500 text-white focus:ring-blue-500"
+          />
+          <button type="submit" className="absolute inset-y-0 left-0 flex items-center pl-3">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10 4a6 6 0 016 6 6 6 0 01-1.254 3.68l5.017 5.018a1 1 0 01-1.414 1.414l-5.018-5.017A6 6 0 1110 4z"
+              />
+            </svg>
+          </button>
+        </form>
 
         {/* Right Section: Profile & Dropdown Menu */}
         <div className="flex items-center space-x-4">
