@@ -95,7 +95,7 @@ const UserProfile: React.FC = () => {
         {/* Plus Button: Only visible if this is your profile */}
         {firebaseUser && firebaseUser.uid === uidFromURL && (
           <button
-            onClick={() => navigate("/createlisting")}
+            onClick={() => navigate(`/u/${uidFromURL}/createlisting`)}
             className="absolute top-4 right-4 bg-green-500 hover:bg-green-600 text-white rounded-full w-10 h-10 flex items-center justify-center"
             title="Create Listing"
           >
