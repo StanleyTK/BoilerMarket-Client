@@ -36,6 +36,7 @@ const Create_Listing: React.FC = () => {
 
     return (
     <div className="min-h-screen flex items-center justify-center bg-gray-800">
+        <form className="w-80 bg-white p-8 rounded-lg shadow-md">
             <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Create Listing</h2>
             <input
                 type="title"
@@ -67,6 +68,7 @@ const Create_Listing: React.FC = () => {
             onClick={handleCreateListing}>
                 Post Listing
             </button>
+        </form>
     </div>
     );
 };
