@@ -15,3 +15,21 @@ export async function createListing(idToken: string, title: string, description:
 
     return response.json();
 }
+
+export async function deleteListing(idToken: string , listingId: number, user: string) {
+    console.log( JSON.stringify({ idToken, listingId, user }))
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/listing/delete/`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ idToken, listingId }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to create listing');
+    }
+
+    return response.json();
+}
