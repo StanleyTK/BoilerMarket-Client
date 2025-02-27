@@ -17,6 +17,7 @@ interface Listing {
   displayName?: string;
   uid: string;
   hidden: boolean;
+  sold: boolean;
 }
 
 // todo - maybe change this to be required once we do view other listings?
@@ -53,6 +54,10 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, userOwnsListi
         </div>
       </Link>
     )}
+    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10 px-3 py-1 text-red-600 font-bold text-lg">
+      {listing.sold? "SOLD":  ""}
+    </div>
+
 
     <div className="relative h-48 w-full">
       {listing.image ? (

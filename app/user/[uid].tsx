@@ -18,6 +18,7 @@ interface Listing {
   displayName?: string;
   uid: string;
   hidden: boolean;
+  sold: boolean;
 }
 
 const UserProfile: React.FC = () => {
