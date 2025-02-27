@@ -58,6 +58,16 @@ const Navbar: React.FC = () => {
           </div>
         </div>
 
+        {/* Leftish Section: About Us */}
+        <div className="flex items-left">
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => navigate("/about")}
+          >
+            <span className="text-xl font-bold">About Us</span>
+          </div>
+        </div>
+
         {/* Center Section: Search Bar */}
         <form onSubmit={handleSearchSubmit} className="relative w-1/3">
           <input
