@@ -18,6 +18,7 @@ interface Listing {
   image?: string;
   displayName?: string;   
   uid: string;
+  hidden: boolean;
 }
 
 const Manage_Listing: React.FC = () => {
@@ -30,6 +31,8 @@ const Manage_Listing: React.FC = () => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState(0);
   const [userListings, setUserListings] = useState<Listing[]>([]);
+  const [hidden, setHidden] = useState(false);
+
   
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [showWarningModal, setShowWarningModal] = useState(false);
@@ -64,6 +67,7 @@ const Manage_Listing: React.FC = () => {
       setTitle(listing.title);
       setDescription(listing.description);
       setPrice(parseFloat(listing.price));
+      setHidden(listing.hidden);
     }
   }, [location]);
 
@@ -103,6 +107,7 @@ const Manage_Listing: React.FC = () => {
     setTitle(listing.title);
     setDescription(listing.description);
     setPrice(parseFloat(listing.price));
+    setHidden(listing.hidden);
   };
 
   const handleSave = async () => {
@@ -116,13 +121,14 @@ const Manage_Listing: React.FC = () => {
     }
     try {
       const idToken = await firebaseUser.getIdToken();
-      await updateListing(idToken, selectedListing.id, { title, description, price });
+      await updateListing(idToken, selectedListing.id, { title, description, price, hidden });
       await fetchUserListings();
       setSelectedListing({
         ...selectedListing,
         title,
         description,
         price: price.toString(),
+        hidden: hidden
       });
     } catch (error) {
       setError("Error saving listing");
@@ -141,6 +147,35 @@ const Manage_Listing: React.FC = () => {
     }
     setShowDeleteModal(true);
   };
+
+  const handleHidden = async () => {
+    if (!firebaseUser) {
+      setLoading(true);
+      return;
+    }
+    if (!selectedListing) {
+      setShowWarningModal(true);
+      return;
+    }
+    try {
+      const idToken = await firebaseUser.getIdToken();
+      setHidden(!hidden);
+      await updateListing(idToken, selectedListing.id, { title, description, price, hidden: !hidden });
+      await fetchUserListings();
+      setSelectedListing({
+        ...selectedListing,
+        title,
+        description,
+        price: price.toString(),
+        hidden: !hidden
+      });
+      
+    } catch (error) {
+      setError("Error edit hidden");
+      console.error(error);
+    }
+  };
+  
 
   const confirmDelete = async () => {
     if (!firebaseUser || !selectedListing) return;
@@ -223,6 +258,7 @@ const Manage_Listing: React.FC = () => {
               className={`w-full p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${theme === "dark" ? "bg-gray-600 text-white" : "bg-gray-200 text-black"}`}
             />
           </div>
+          
         </div>
 
         <div className="mt-6 flex space-x-4">
@@ -238,6 +274,13 @@ const Manage_Listing: React.FC = () => {
           >
             Delete Listing
           </button>
+          <button
+            onClick={handleHidden}
+            className="bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded"
+          >
+            {hidden ? "Show Listing" : "Hide Listing"}
+          </button>
+
           <button
             onClick={() => {
               setSelectedListing(null);
