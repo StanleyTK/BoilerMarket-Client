@@ -5,7 +5,21 @@ import type { User } from "firebase/auth";
 import { getApp } from "firebase/app";
 import { deleteUserWrapper, getUser, sendPurdueVerification } from '~/service/user-service';
 import type { UserProfileData } from "~/service/types";
+import { fetchListingByUser } from '~/service/fetch-listings';
 import { useTheme } from "~/components/ThemeContext";
+import { ListingCard } from '~/components/ListingCard';
+
+
+interface Listing {
+  id: number;
+  title: string;
+  description: string;
+  price: number | string;
+  image?: string;
+  displayName?: string;
+  uid: string;
+}
+
 
 const UserProfile: React.FC = () => {
   const auth = getAuth(getApp());
@@ -15,6 +29,7 @@ const UserProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [purdueEmail, setPurdueEmail] = useState<string>("");
+  const [userListings, setUserListings] = useState<Listing[]>([]);
   const navigate = useNavigate();
   const { theme } = useTheme();
 
@@ -54,6 +69,25 @@ const UserProfile: React.FC = () => {
     };
 
     fetchUserData();
+
+    const getUserListings = async () => {
+      try {
+        console.log(auth.currentUser)
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          throw new Error("User not authenticated");
+        }
+        const idToken = await currentUser.getIdToken();
+        console.log(uidFromURL);
+        const data = await fetchListingByUser(String(uidFromURL) , idToken );
+        setUserListings(data);
+        console.log(data);
+      } catch (error) {
+        console.error('Error fetching user listings:', error);
+      }
+    };
+    getUserListings();
+
   }, [uidFromURL]);
 
 
@@ -195,7 +229,19 @@ const UserProfile: React.FC = () => {
           </div>
         )}
       </div>
+      <div className="user-listing-container">
+            {userListings.length > 0 ? (
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
+                    {userListings.map((userListings, index) => (
+                        <ListingCard key={index} listing={userListings} />
+                    ))}
+                </div>
+            ) : (
+                <p>No listings found.</p>
+            )}
+        </div>
     </div>
+    
   );
 };
 
