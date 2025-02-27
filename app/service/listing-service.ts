@@ -38,19 +38,18 @@ export async function createListing(
 
 export async function deleteListing(
   idToken: string,
-  listingId: number,
-  user: string
+  listingId: number
 ) {
-  console.log(JSON.stringify({ idToken, listingId, user }));
+  console.log(JSON.stringify({ listingId }));
   const response = await fetch(
-    `${import.meta.env.VITE_BASE_URL}/api/listing/delete/`,
+    `${import.meta.env.VITE_BASE_URL}/api/listing/delete/${listingId}/`,
     {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${idToken}`,
       },
-      body: JSON.stringify({ idToken, listingId }),
+      body: JSON.stringify({ listingId }),
     }
   );
 
@@ -61,7 +60,6 @@ export async function deleteListing(
   return response.json();
 }
 
-// wip
 export async function updateListing(
   idToken: string,
   listingId: number,

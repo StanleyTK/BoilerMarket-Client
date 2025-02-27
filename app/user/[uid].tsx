@@ -228,6 +228,17 @@ const UserProfile: React.FC = () => {
             </button>
           </div>
         )}
+
+        {firebaseUser && firebaseUser.uid === uidFromURL && (
+          <div className="mt-6 flex space-x-4">
+            <button
+              onClick={() => navigate(`/u/${uidFromURL}/manage_listings`)}
+              className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded border border-white"
+            >
+              Manage Listings
+            </button>
+          </div>
+        )}
       </div>
       <div className="user-listing-container">
             {userListings.length > 0 ? (
@@ -239,7 +250,7 @@ const UserProfile: React.FC = () => {
             ) : (
                 <p>No listings found.</p>
             )}
-        </div>
+      </div>
     </div>
     
   );
