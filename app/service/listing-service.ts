@@ -69,7 +69,7 @@ export async function updateListing(
 ) {
   // todo - add category/hidden in when implemented
   const response = await fetch(
-    `${import.meta.env.VITE_BASE_URL}/api/listing/update/`,
+    `${import.meta.env.VITE_BASE_URL}/api/listing/update/${listingId}/`,
     {
       method: "PUT",
       headers: {
