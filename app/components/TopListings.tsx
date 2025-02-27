@@ -10,6 +10,7 @@ interface Listing {
   image?: string;
   displayName?: string;
   uid: string;
+  hidden: boolean;
 }
 
 const TopListings: React.FC = () => {
@@ -30,7 +31,8 @@ const TopListings: React.FC = () => {
   return (
     <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
       {listings.length > 0 ? (
-        listings.map((listing) => (
+        listings.filter((listing) => !listing.hidden)
+        .map((listing) => (
           <ListingCard key={listing.id} listing={listing} />
         ))
       ) : (
