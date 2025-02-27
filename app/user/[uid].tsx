@@ -233,7 +233,7 @@ const UserProfile: React.FC = () => {
             {userListings.length > 0 ? (
                 <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
                     {userListings.map((userListings, index) => (
-                        <ListingCard key={index} listing={userListings} />
+                        <ListingCard key={index} listing={userListings} userOwnsListing={(firebaseUser?.uid === uidFromURL)}/>
                     ))}
                 </div>
             ) : (
