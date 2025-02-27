@@ -12,5 +12,6 @@ export default [
     route("u/:uid/edit", "./edit_user/edit_user.tsx"),
     route("search", "./search/search.tsx"),
     route("u/:uid/createlisting", "./create_listing/create_listing.tsx"),
+    route("about", "./about/about.tsx"),
   ]),
 ] satisfies RouteConfig;
