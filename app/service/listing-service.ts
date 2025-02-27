@@ -63,7 +63,7 @@ export async function deleteListing(
 export async function updateListing(
   idToken: string,
   listingId: number,
-  updateData: { title: string; description: string; price: number }
+  updateData: { title: string; description: string; price: number; hidden: boolean }
 ) {
   // todo - add category/hidden in when implemented
   const response = await fetch(
@@ -81,6 +81,5 @@ export async function updateListing(
   if (!response.ok) {
     throw new Error("Failed to update user");
   }
-
   return response.json();
 }
