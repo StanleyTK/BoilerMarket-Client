@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router";
 import { getAuth, onAuthStateChanged, sendEmailVerification } from "firebase/auth";
 import type { User } from "firebase/auth";
@@ -17,6 +17,7 @@ interface Listing {
   image?: string;
   displayName?: string;
   uid: string;
+  hidden: boolean;
 }
 
 const UserProfile: React.FC = () => {
@@ -31,6 +32,20 @@ const UserProfile: React.FC = () => {
   const [emailAuthVerified, setEmailAuthVerified] = useState<boolean>(false);
   const navigate = useNavigate();
   const { theme } = useTheme();
+
+  const fetchUserListings = useCallback(async () => {
+      if (!firebaseUser) return;
+      setLoading(true);
+      try {
+        const idToken = await firebaseUser.getIdToken();
+        const data = await fetchListingByUser(String(firebaseUser.uid), idToken);
+        setUserListings(data);
+      } catch (error) {
+        setError((error as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    }, [firebaseUser]);
 
   // Listen for Firebase authentication state changes
   useEffect(() => {
@@ -98,7 +113,9 @@ const UserProfile: React.FC = () => {
       }
     };
     getUserListings();
+
   }, [uidFromURL]);
+
 
   const handlePurdueEmailVerification = async () => {
     if (!firebaseUser) {
