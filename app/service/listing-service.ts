@@ -63,7 +63,7 @@ export async function deleteListing(
 export async function updateListing(
   idToken: string,
   listingId: number,
-  updateData: { title: string; description: string; price: number; hidden: boolean }
+  updateData: { title: string; description: string; price: number; hidden: boolean, sold: boolean }
 ) {
   // todo - add category/hidden in when implemented
   const response = await fetch(

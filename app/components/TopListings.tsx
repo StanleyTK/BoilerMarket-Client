@@ -11,6 +11,7 @@ interface Listing {
   displayName?: string;
   uid: string;
   hidden: boolean;
+  sold: boolean;
 }
 
 const TopListings: React.FC = () => {
