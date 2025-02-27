@@ -3,12 +3,11 @@ import { useParams, useNavigate } from "react-router";
 import { getAuth, onAuthStateChanged, sendEmailVerification } from "firebase/auth";
 import type { User } from "firebase/auth";
 import { getApp } from "firebase/app";
-import { deleteUserWrapper, getUser, sendPurdueVerification } from '~/service/user-service';
+import { deleteUserWrapper, getUser, sendPurdueVerification, checkEmailAuth } from '~/service/user-service';
 import type { UserProfileData } from "~/service/types";
 import { fetchListingByUser } from '~/service/fetch-listings';
 import { useTheme } from "~/components/ThemeContext";
 import { ListingCard } from '~/components/ListingCard';
-
 
 interface Listing {
   id: number;
@@ -20,7 +19,6 @@ interface Listing {
   uid: string;
 }
 
-
 const UserProfile: React.FC = () => {
   const auth = getAuth(getApp());
   const { uid: uidFromURL } = useParams<{ uid: string }>();
@@ -30,6 +28,7 @@ const UserProfile: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [purdueEmail, setPurdueEmail] = useState<string>("");
   const [userListings, setUserListings] = useState<Listing[]>([]);
+  const [emailAuthVerified, setEmailAuthVerified] = useState<boolean>(false);
   const navigate = useNavigate();
   const { theme } = useTheme();
 
@@ -44,6 +43,21 @@ const UserProfile: React.FC = () => {
   }, [auth]);
 
   useEffect(() => {
+    const verifyEmailAuth = async () => {
+      if (firebaseUser) {
+        try {
+          const idToken = await firebaseUser.getIdToken();
+          await checkEmailAuth(idToken);
+          setEmailAuthVerified(true);
+        } catch (error) {
+          setEmailAuthVerified(false);
+        }
+      }
+    };
+    verifyEmailAuth();
+  }, [firebaseUser]);
+
+  useEffect(() => {
     if (!uidFromURL) {
       setError("Invalid user ID.");
       setLoading(false);
@@ -55,7 +69,7 @@ const UserProfile: React.FC = () => {
       try {
         getUser(uidFromURL).then((data) => {
           if (data.email == null) {
-            setError("User not found"); 
+            setError("User not found");
           } else {
             setUser(data);
             setPurdueEmail(data.purdueEmail || "");
@@ -72,24 +86,19 @@ const UserProfile: React.FC = () => {
 
     const getUserListings = async () => {
       try {
-        console.log(auth.currentUser)
         const currentUser = auth.currentUser;
         if (!currentUser) {
           throw new Error("User not authenticated");
         }
         const idToken = await currentUser.getIdToken();
-        console.log(uidFromURL);
-        const data = await fetchListingByUser(String(uidFromURL) , idToken );
+        const data = await fetchListingByUser(String(uidFromURL), idToken);
         setUserListings(data);
-        console.log(data);
       } catch (error) {
         console.error('Error fetching user listings:', error);
       }
     };
     getUserListings();
-
   }, [uidFromURL]);
-
 
   const handlePurdueEmailVerification = async () => {
     if (!firebaseUser) {
@@ -130,8 +139,8 @@ const UserProfile: React.FC = () => {
   return (
     <div className={`min-h-screen ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"} p-6 flex flex-col items-center relative`}>
       <div className={`w-full max-w-2xl ${theme === "dark" ? "bg-gray-700" : "bg-gray-300"} shadow-lg rounded-xl p-8 relative`}>
-        {/* Plus Button: Only visible if this is your profile */}
-        {firebaseUser && firebaseUser.uid === uidFromURL && (
+        {/* Plus Button: Only visible if this is your profile and email auth is verified */}
+        {firebaseUser && firebaseUser.uid === uidFromURL && emailAuthVerified && (
           <button
             onClick={() => navigate(`/u/${uidFromURL}/createlisting`)}
             className="absolute top-4 right-4 bg-green-500 hover:bg-green-600 text-white rounded-full w-10 h-10 flex items-center justify-center"
@@ -190,9 +199,7 @@ const UserProfile: React.FC = () => {
                   className="w-2/3 p-2 border border-gray-300 rounded"
                 />
                 <button
-                  onClick={() => {
-                    handlePurdueEmailVerification();
-                  }}
+                  onClick={handlePurdueEmailVerification}
                   className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded ml-2"
                 >
                   Verify
@@ -207,15 +214,14 @@ const UserProfile: React.FC = () => {
           </div>
 
           {user?.bio && (
-          <div>
-            <h3 className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"} font-semibold`}>Bio:</h3>
-            <p className={`${theme === "dark" ? "bg-gray-800" : "bg-gray-200"} p-4 rounded-lg mt-1`}>
-              {user.bio}
-            </p>
-          </div>
-        )}
+            <div>
+              <h3 className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"} font-semibold`}>Bio:</h3>
+              <p className={`${theme === "dark" ? "bg-gray-800" : "bg-gray-200"} p-4 rounded-lg mt-1`}>
+                {user.bio}
+              </p>
+            </div>
+          )}
         </div>
-
 
         {/* Edit Account Button */}
         {firebaseUser && firebaseUser.uid === uidFromURL && (
@@ -229,30 +235,32 @@ const UserProfile: React.FC = () => {
           </div>
         )}
 
-        {firebaseUser && firebaseUser.uid === uidFromURL && (
-          <div className="mt-6 flex space-x-4">
-            <button
-              onClick={() => navigate(`/u/${uidFromURL}/manage_listings`)}
-              className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded border border-white"
-            >
-              Manage Listings
-            </button>
-          </div>
-        )}
       </div>
-      <div className="user-listing-container">
-            {userListings.length > 0 ? (
-                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
-                    {userListings.map((userListings, index) => (
-                        <ListingCard key={index} listing={userListings} userOwnsListing={(firebaseUser?.uid === uidFromURL)}/>
-                    ))}
-                </div>
-            ) : (
-                <p>No listings found.</p>
-            )}
-      </div>
+      <div className="mt-12"></div>
+      {emailAuthVerified ? (
+        <div className="user-listing-container">
+          {userListings.length > 0 ? (
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
+              {userListings.map((listing, index) => (
+                <ListingCard
+                  key={index}
+                  listing={listing}
+                  userOwnsListing={firebaseUser?.uid === uidFromURL}
+                />
+              ))}
+            </div>
+          ) : (
+            <p>No listings found.</p>
+          )}
+        </div>
+      ) : (
+        firebaseUser?.uid === uidFromURL && (
+          <p>You cannot create any listings until you verify your email.</p>
+        )
+      )}
+
+
     </div>
-    
   );
 };
 
