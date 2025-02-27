@@ -19,6 +19,7 @@ interface Listing {
   displayName?: string;   
   uid: string;
   hidden: boolean;
+  sold: boolean
 }
 
 const Manage_Listing: React.FC = () => {
@@ -32,6 +33,8 @@ const Manage_Listing: React.FC = () => {
   const [price, setPrice] = useState(0);
   const [userListings, setUserListings] = useState<Listing[]>([]);
   const [hidden, setHidden] = useState(false);
+  const [sold, setSold] = useState(false);
+
 
   
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
@@ -68,6 +71,7 @@ const Manage_Listing: React.FC = () => {
       setDescription(listing.description);
       setPrice(parseFloat(listing.price));
       setHidden(listing.hidden);
+      setSold(listing.sold);
     }
   }, [location]);
 
@@ -108,6 +112,7 @@ const Manage_Listing: React.FC = () => {
     setDescription(listing.description);
     setPrice(parseFloat(listing.price));
     setHidden(listing.hidden);
+    setSold(listing.sold);
   };
 
   const handleSave = async () => {
@@ -121,14 +126,15 @@ const Manage_Listing: React.FC = () => {
     }
     try {
       const idToken = await firebaseUser.getIdToken();
-      await updateListing(idToken, selectedListing.id, { title, description, price, hidden });
+      await updateListing(idToken, selectedListing.id, { title, description, price, hidden, sold });
       await fetchUserListings();
       setSelectedListing({
         ...selectedListing,
         title,
         description,
         price: price.toString(),
-        hidden: hidden
+        hidden: hidden,
+        sold: sold
       });
     } catch (error) {
       setError("Error saving listing");
@@ -160,18 +166,48 @@ const Manage_Listing: React.FC = () => {
     try {
       const idToken = await firebaseUser.getIdToken();
       setHidden(!hidden);
-      await updateListing(idToken, selectedListing.id, { title, description, price, hidden: !hidden });
+      await updateListing(idToken, selectedListing.id, { title, description, price, hidden: !hidden, sold});
       await fetchUserListings();
       setSelectedListing({
         ...selectedListing,
         title,
         description,
         price: price.toString(),
-        hidden: !hidden
+        hidden: !hidden,
+        sold: sold
       });
       
     } catch (error) {
-      setError("Error edit hidden");
+      setError("Error hidden not working");
+      console.error(error);
+    }
+  };
+
+  const handleSold = async () => {
+    if (!firebaseUser) {
+      setLoading(true);
+      return;
+    }
+    if (!selectedListing) {
+      setShowWarningModal(true);
+      return;
+    }
+    try {
+      const idToken = await firebaseUser.getIdToken();
+      setSold(!sold);
+      await updateListing(idToken, selectedListing.id, { title, description, price, hidden: hidden, sold: !sold });
+      await fetchUserListings();
+      setSelectedListing({
+        ...selectedListing,
+        title,
+        description,
+        price: price.toString(),
+        hidden: hidden,
+        sold: !sold
+      });
+      
+    } catch (error) {
+      setError("Error sold not working");
       console.error(error);
     }
   };
@@ -216,6 +252,14 @@ const Manage_Listing: React.FC = () => {
           {selectedListing ? `Edit Listing: ${selectedListing.id}` : "Edit Listing"}
         </h1>
         <div className="space-y-4">
+        <button
+            onClick={handleSold}
+            className={`px-4 py-2 text-white font-bold rounded transition ${
+              sold ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"
+            }`}
+          >
+            {sold ? "Mark as Unsold" : "Unmark as Sold"}
+          </button>
           <div>
             <label className={`block ${theme === "dark" ? "text-gray-300" : "text-gray-700"} font-semibold mb-1`}>
               Listing Title
@@ -258,7 +302,6 @@ const Manage_Listing: React.FC = () => {
               className={`w-full p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${theme === "dark" ? "bg-gray-600 text-white" : "bg-gray-200 text-black"}`}
             />
           </div>
-          
         </div>
 
         <div className="mt-6 flex space-x-4">
