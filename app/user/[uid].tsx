@@ -267,7 +267,7 @@ const UserProfile: React.FC = () => {
               ))}
             </div>
           ) : (
-            <p>No listings found.</p>
+            <p>No listings found. </p>
           )}
         </div>
       ) : (
