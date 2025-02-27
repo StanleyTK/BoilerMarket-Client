@@ -258,7 +258,7 @@ const Manage_Listing: React.FC = () => {
               sold ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"
             }`}
           >
-            {sold ? "Mark as Unsold" : "Unmark as Sold"}
+            {sold ?  "Unmark as SOLD" : "Mark as SOLD"}
           </button>
           <div>
             <label className={`block ${theme === "dark" ? "text-gray-300" : "text-gray-700"} font-semibold mb-1`}>
