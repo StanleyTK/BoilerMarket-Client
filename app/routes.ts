@@ -10,5 +10,6 @@ export default [
     route("verify/:token", "./user/[token].tsx"),
     route("u/:uid/edit", "./edit/edit.tsx"),
     route("search", "./search/search.tsx"),
+    route("u/:uid/createlisting", "./create_listing/create_listing.tsx"),
   ]),
 ] satisfies RouteConfig;
