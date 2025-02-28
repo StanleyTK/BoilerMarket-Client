@@ -97,7 +97,7 @@ const Navbar: React.FC = () => {
         {/* Right Section: Profile & Dropdown Menu */}
         <div className="flex items-center space-x-4">
           <button onClick={handleProfileClick} className="font-semibold hover:underline">
-            {isLoggedIn ? "View My Profile" : "Login"}
+             View My Profile
           </button>
           <div className="cursor-pointer p-2" onClick={toggleMenu}>
             <svg
