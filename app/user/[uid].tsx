@@ -79,27 +79,26 @@ const UserProfile: React.FC = () => {
       setLoading(false);
       return;
     }
-
+  
     const fetchUserData = async () => {
       setLoading(true);
       try {
-        getUser(uidFromURL).then((data) => {
-          if (data.email == null) {
-            setError("User not found");
-          } else {
-            setUser(data);
-            setPurdueEmail(data.purdueEmail || "");
-          }
-        });
+        const data = await getUser(uidFromURL);
+        if (!data || !data.email) {
+          setError("User not found");
+        } else {
+          setUser(data);
+          setPurdueEmail(data.purdueEmail || "");
+        }
       } catch (err) {
         setError((err as Error).message);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchUserData();
-
+  
     const getUserListings = async () => {
       try {
         const currentUser = auth.currentUser;
@@ -110,12 +109,12 @@ const UserProfile: React.FC = () => {
         const data = await fetchListingByUser(String(uidFromURL), idToken);
         setUserListings(data);
       } catch (error) {
-        console.error('Error fetching user listings:', error);
+        console.error("Error fetching user listings:", error);
       }
     };
     getUserListings();
-
   }, [uidFromURL]);
+  
 
 
   const handlePurdueEmailVerification = async () => {

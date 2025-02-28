@@ -57,15 +57,7 @@ const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Leftish Section: About Us */}
-        <div className="flex items-left">
-          <div
-            className="flex items-center cursor-pointer"
-            onClick={() => navigate("/about")}
-          >
-            <span className="text-xl font-bold">About Us</span>
-          </div>
-        </div>
+    
 
         {/* Center Section: Search Bar */}
         <form onSubmit={handleSearchSubmit} className="relative w-1/3">
@@ -146,6 +138,12 @@ const Navbar: React.FC = () => {
                 className="block w-full text-left px-4 py-2 hover:bg-gray-400"
               >
                 Sign Up
+              </button>
+              <button
+                onClick={() => navigate("/about")}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-400"
+              >
+                About us
               </button>
             </>
           )}
