@@ -29,38 +29,37 @@ interface ListingCardProps {
 
 export const ListingCard: React.FC<ListingCardProps> = ({ listing, userOwnsListing }) => (
   <div className="relative bg-white rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-[1.03]">
-    {userOwnsListing ? (
-      <>
-        <Link
-          to={`/u/${listing.uid}/manage_listings`}
-          state={{ selectedListing: listing }}
-        >
-          <div className="absolute top-2 left-2 z-10 w-10 h-10 rounded-full bg-white shadow flex items-center justify-center cursor-pointer">
-            <FontAwesomeIcon icon={faUserPen} className="text-gray-600 text-xl" />
+      {userOwnsListing ? (
+        <>
+          <Link
+            to={`/u/${listing.uid}/manage_listings`}
+            state={{ selectedListing: listing }}
+          >
+            <div className="absolute top-2 left-2 z-10 w-10 h-10 rounded-full bg-white shadow flex items-center justify-center cursor-pointer">
+              <FontAwesomeIcon icon={faUserPen} className="text-gray-600 text-xl" />
+            </div>
+          </Link>
+
+          <div
+            className="absolute top-2 right-2 z-10 w-10 h-10 rounded-full bg-white shadow flex items-center justify-center cursor-pointer"
+          >
+            <FontAwesomeIcon icon={listing.hidden ? faEyeSlash : faEye} className="text-gray-600 text-xl" />
           </div>
-        </Link>
+        </>
 
-        <div
-          className="absolute top-2 right-2 z-10 w-10 h-10 rounded-full bg-white shadow flex items-center justify-center cursor-pointer"
-        >
-          <FontAwesomeIcon icon={listing.hidden ? faEyeSlash : faEye} className="text-gray-600 text-xl" />
+
+      ) : (
+          <Link to={`/u/${listing.uid}`}>
+            <div className="absolute top-2 left-2 z-10 w-10 h-10 rounded-full bg-white shadow flex items-center justify-center cursor-pointer">
+              <FontAwesomeIcon icon={faUser} className="text-gray-600 text-xl" />
+            </div>
+          </Link>
+      )}
+
+        <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10 px-3 py-1 text-red-600 font-bold text-lg">
+          {listing.sold ? "SOLD" : ""}
         </div>
-      </>
-
-
-    ) : (
-      <Link to={`/u/${listing.uid}`}>
-        <div className="absolute top-2 left-2 z-10 w-10 h-10 rounded-full bg-white shadow flex items-center justify-center cursor-pointer">
-          <FontAwesomeIcon icon={faUser} className="text-gray-600 text-xl" />
-        </div>
-      </Link>
-    )}
-    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10 px-3 py-1 text-red-600 font-bold text-lg">
-      {listing.sold ? "SOLD" : ""}
-    </div>
-
-
-    <div className="relative h-48 w-full">
+        <div className="relative h-48 w-full">
       {listing.image ? (
         <img
           src={listing.image} // when we have it lol
@@ -86,5 +85,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, userOwnsListi
       </p>
       <p className="mt-2 text-gray-600 text-sm">{listing.description}</p>
     </div>
+
+    
   </div>
 );
