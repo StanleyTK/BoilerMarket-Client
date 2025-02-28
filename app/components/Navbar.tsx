@@ -39,9 +39,8 @@ const Navbar: React.FC = () => {
     event.preventDefault();
     if (location.pathname !== "/search") {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      await handleSearch();
     }
+    await handleSearch();
   };
 
   return (
