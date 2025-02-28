@@ -259,7 +259,7 @@ const UserProfile: React.FC = () => {
         <div className="user-listing-container">
           {userListings.length > 0 ? (
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
-              {userListings.map((listing, index) => (
+              {userListings.filter((listing) => !listing.hidden || listing.uid === firebaseUser?.uid).map((listing, index) => (
                 <ListingCard
                   key={index}
                   listing={listing}
