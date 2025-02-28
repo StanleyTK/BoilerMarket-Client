@@ -14,6 +14,7 @@ interface Listing {
   title: string;
   description: string;
   price: number | string;
+  original_price: number | string;
   image?: string;
   displayName?: string;
   uid: string;
