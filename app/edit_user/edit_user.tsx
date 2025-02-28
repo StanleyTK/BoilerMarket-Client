@@ -18,7 +18,6 @@ const EditAccount: React.FC = () => {
 
   // Form states for editable fields
   const [displayName, setDisplayName] = useState("");
-  const [purdueEmail, setPurdueEmail] = useState("");
   const [bio, setBio] = useState("");
 
   useEffect(() => {
@@ -36,7 +35,6 @@ const EditAccount: React.FC = () => {
         } else {
           setUser(data);
           setDisplayName(data.displayName || "");
-          setPurdueEmail(data.purdueEmail || "");
           setBio(data.bio || "");
         }
       } catch (err) {
@@ -59,7 +57,9 @@ const EditAccount: React.FC = () => {
       }
       const idToken = await currentUser.getIdToken();
 
-      await updateUser(idToken, { displayName, purdueEmail, bio });
+      await updateUser(idToken, {
+        displayName, bio,
+      });
       navigate(`/u/${uid}`); // Navigate back to the profile page after saving
     } catch (err) {
       setError((err as Error).message);
@@ -122,25 +122,7 @@ const EditAccount: React.FC = () => {
             />
           </div>
 
-          {/* Purdue Email Field */}
-          <div>
-            <label
-              className={`block ${
-                theme === "dark" ? "text-gray-300" : "text-gray-700"
-              } font-semibold mb-1`}
-            >
-              Purdue Email
-            </label>
-            <input
-              type="email"
-              value={purdueEmail}
-              onChange={(e) => setPurdueEmail(e.target.value)}
-              className={`w-full p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                theme === "dark" ? "bg-gray-600 text-white" : "bg-gray-200 text-black"
-              }`}
-            />
-          </div>
-
+  
           {/* Bio Field */}
           <div>
             <label

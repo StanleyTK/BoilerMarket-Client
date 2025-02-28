@@ -37,7 +37,7 @@ async function deleteUserFromDatabase(uid: string, idToken: string) {
 }
 export async function updateUser(
     idToken: string,
-    updateData: { displayName: string; purdueEmail: string; bio: string }
+    updateData: { displayName: string; bio: string }
   ) {
     const response = await fetch(
       `${import.meta.env.VITE_BASE_URL}/api/user/update/`,
@@ -119,6 +119,22 @@ export async function verifyPurdueEmailToken(uid: string, token: string, idToken
     if (!response.ok) {
         throw new Error('Failed to verify Purdue email');
     }
+
+    return response.json();
+}
+
+export async function checkEmailAuth(idToken: string) {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/user/check_email_auth`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            "Authorization": `Bearer ${idToken}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to check Purdue verification');
+    }    
 
     return response.json();
 }

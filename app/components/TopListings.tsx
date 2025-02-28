@@ -7,10 +7,12 @@ interface Listing {
   title: string;
   description: string;
   price: number | string;
+  original_price: number | string;
   image?: string;
   displayName?: string;
   uid: string;
   hidden: boolean;
+  sold: boolean;
 }
 
 const TopListings: React.FC = () => {
@@ -32,9 +34,9 @@ const TopListings: React.FC = () => {
     <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
       {listings.length > 0 ? (
         listings.filter((listing) => !listing.hidden)
-        .map((listing) => (
-          <ListingCard key={listing.id} listing={listing} />
-        ))
+          .map((listing) => (
+            <ListingCard key={listing.id} listing={listing} />
+          ))
       ) : (
         <div>Loading listings...</div>
       )}
