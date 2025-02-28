@@ -74,47 +74,47 @@ const UserProfile: React.FC = () => {
   }, [firebaseUser]);
 
   useEffect(() => {
-    if (!uidFromURL) {
-      setError("Invalid user ID.");
+  if (!uidFromURL) {
+    setError("Invalid user ID.");
+    setLoading(false);
+    return;
+  }
+
+  const fetchUserData = async () => {
+    setLoading(true);
+    try {
+      const data = await getUser(uidFromURL);
+      if (!data || !data.email) {
+        setError("User not found");
+      } else {
+        setUser(data);
+        setPurdueEmail(data.purdueEmail || "");
+      }
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
       setLoading(false);
-      return;
     }
-  
-    const fetchUserData = async () => {
-      setLoading(true);
-      try {
-        const data = await getUser(uidFromURL);
-        if (!data || !data.email) {
-          setError("User not found");
-        } else {
-          setUser(data);
-          setPurdueEmail(data.purdueEmail || "");
-        }
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
+  };
+
+  fetchUserData();
+
+  const getUserListings = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        throw new Error("User not authenticated");
       }
-    };
-  
-    fetchUserData();
-  
-    const getUserListings = async () => {
-      try {
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-          throw new Error("User not authenticated");
-        }
-        const idToken = await currentUser.getIdToken();
-        const data = await fetchListingByUser(String(uidFromURL), idToken);
-        setUserListings(data);
-      } catch (error) {
-        console.error("Error fetching user listings:", error);
-      }
-    };
-    getUserListings();
-  }, [uidFromURL]);
-  
+      const idToken = await currentUser.getIdToken();
+      const data = await fetchListingByUser(String(uidFromURL), idToken);
+      setUserListings(data);
+    } catch (error) {
+      console.error("Error fetching user listings:", error);
+    }
+  };
+  getUserListings();
+}, [uidFromURL]);
+
 
 
   const handlePurdueEmailVerification = async () => {
