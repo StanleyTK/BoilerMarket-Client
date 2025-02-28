@@ -39,9 +39,8 @@ const Navbar: React.FC = () => {
     event.preventDefault();
     if (location.pathname !== "/search") {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      await handleSearch();
     }
+    await handleSearch();
   };
 
   return (
@@ -57,6 +56,8 @@ const Navbar: React.FC = () => {
             <span className="text-xl font-bold">BoilerMarket</span>
           </div>
         </div>
+
+    
 
         {/* Center Section: Search Bar */}
         <form onSubmit={handleSearchSubmit} className="relative w-1/3">
@@ -88,7 +89,7 @@ const Navbar: React.FC = () => {
         {/* Right Section: Profile & Dropdown Menu */}
         <div className="flex items-center space-x-4">
           <button onClick={handleProfileClick} className="font-semibold hover:underline">
-            {isLoggedIn ? "View My Profile" : "Login"}
+             View My Profile
           </button>
           <div className="cursor-pointer p-2" onClick={toggleMenu}>
             <svg
@@ -137,6 +138,12 @@ const Navbar: React.FC = () => {
                 className="block w-full text-left px-4 py-2 hover:bg-gray-400"
               >
                 Sign Up
+              </button>
+              <button
+                onClick={() => navigate("/about")}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-400"
+              >
+                About us
               </button>
             </>
           )}
