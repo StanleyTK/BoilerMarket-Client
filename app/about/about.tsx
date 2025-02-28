@@ -1,6 +1,9 @@
 import React from "react";
+import { useTheme } from "~/components/ThemeContext";
 
 const AboutPage: React.FC = () => {
+  const { theme } = useTheme();
+
   return (
     <div className="max-w-4xl mx-auto p-6 text-gray-800">
       <h1 className="text-4xl font-bold mb-6 text-center">About Us</h1>
