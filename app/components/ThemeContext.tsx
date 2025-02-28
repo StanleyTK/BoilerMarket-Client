@@ -8,7 +8,7 @@ interface ThemeContextProps {
 }
 
 const ThemeContext = createContext<ThemeContextProps>({
-  theme: "dark", 
+  theme: "dark",
   toggleTheme: () => {},
 });
 
@@ -20,6 +20,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
     return "dark";
   });
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -32,11 +37,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [theme]);
 
-  
-
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === "dark" ? "light" : "dark"));
   };
+
+  // Until the component mounts, return null to avoid hydration mismatches.
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
