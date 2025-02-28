@@ -45,7 +45,7 @@ const Navbar: React.FC = () => {
 
   return (
     <div className="relative">
-      <header className="flex items-center justify-between p-4 bg-gray-500 text-white">
+      <header className="flex items-center justify-between p-4 bg-yellow-600 text-white">
         {/* Left Section: Logo */}
         <div className="flex items-center">
           <div
@@ -123,6 +123,12 @@ const Navbar: React.FC = () => {
                 className="block w-full text-left px-4 py-2 hover:bg-gray-400"
               >
                 Logout
+              </button>
+              <button
+                onClick={() => navigate("/about")}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-400"
+              >
+                About us
               </button>
             </>
           ) : (
