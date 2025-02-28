@@ -57,6 +57,7 @@ const Create_Listing: React.FC = () => {
         String(uid),
         false
       );
+      alert("Listing has been successfully created");
       // Navigate back to the profile page after successful creation.
       navigate(`/u/${uid}`);
     } catch (error) {
