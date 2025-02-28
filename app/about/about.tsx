@@ -17,23 +17,23 @@ const AboutPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="p-4 border rounded-lg shadow-md text-center">
           <h3 className="text-xl font-medium">Stanley Kim</h3>
-          <p className="text-gray-600">PLACE HOLDER</p>
+          <p className="text-gray-600">Computer Science Junior at Purdue University</p>
         </div>
         <div className="p-4 border rounded-lg shadow-md text-center">
           <h3 className="text-xl font-medium">Varun Jasti</h3>
-          <p className="text-gray-600">PLACE HOLDER</p>
+          <p className="text-gray-600">Computer Science Senior at Purdue University</p>
         </div>
         <div className="p-4 border rounded-lg shadow-md text-center">
           <h3 className="text-xl font-medium">Daniel Geva</h3>
-          <p className="text-gray-600">PLACE HOLDER</p>
+          <p className="text-gray-600">Computer Science Senior at Purdue University</p>
         </div>
         <div className="p-4 border rounded-lg shadow-md text-center">
           <h3 className="text-xl font-medium">Andrew Bradley</h3>
-          <p className="text-gray-600">PLACE HOLDER</p>
+          <p className="text-gray-600">Computer Science Senior at Purdue University</p>
         </div>
         <div className="p-4 border rounded-lg shadow-md text-center">
           <h3 className="text-xl font-medium">Ben Lin</h3>
-          <p className="text-gray-600">PLACE HOLDER</p>
+          <p className="text-gray-600">Computer Science Senior at Purdue University</p>
         </div>
       </div>
     </div>
