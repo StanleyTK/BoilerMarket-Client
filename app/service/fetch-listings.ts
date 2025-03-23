@@ -58,6 +58,7 @@ export async function fetchTopListings() {
     if (!response.ok) {
         throw new Error('Failed');
     }
+  
 
     return response.json();
 }
