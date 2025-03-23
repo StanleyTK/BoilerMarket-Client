@@ -19,6 +19,7 @@ interface Listing {
   uid: string;
   hidden: boolean;
   sold: boolean;
+  profilePicture: string,
 }
 
 // todo - maybe change this to be required once we do view other listings?
@@ -50,10 +51,18 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, userOwnsListi
 
     ) : (
       <Link to={`/u/${listing.uid}`}>
-        <div className="absolute top-2 left-2 z-10 w-10 h-10 rounded-full bg-white shadow flex items-center justify-center cursor-pointer">
+      <div className="absolute top-2 left-2 z-10 w-10 h-10 rounded-full bg-white shadow flex items-center justify-center cursor-pointer overflow-hidden">
+        {listing.profilePicture ? (
+          <img
+            src={listing.profilePicture}
+            alt="User Avatar"
+            className="w-full h-full object-cover rounded-full"
+          />
+        ) : (
           <FontAwesomeIcon icon={faUser} className="text-gray-600 text-xl" />
-        </div>
-      </Link>
+        )}
+      </div>
+    </Link>
     )}
     <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10 px-3 py-1 text-red-600 font-bold text-lg">
       {listing.sold ? "SOLD" : ""}

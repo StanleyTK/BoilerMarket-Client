@@ -1,4 +1,5 @@
 export interface UserProfileData {
+    profilePicture: string;
     uid: string;
     email: string;
     purdueEmail: string | null;
@@ -8,4 +9,5 @@ export interface UserProfileData {
     bio?: string;
     admin: boolean;
     banned: boolean;
+    
 }

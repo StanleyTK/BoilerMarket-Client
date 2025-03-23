@@ -20,6 +20,7 @@ interface Listing {
   uid: string;
   hidden: boolean;
   sold: boolean;
+  profilePicture: string
 }
 
 const UserProfile: React.FC = () => {
@@ -88,6 +89,7 @@ const UserProfile: React.FC = () => {
       if (!data || !data.email) {
         setError("User not found");
       } else {
+        console.log(data);
         setUser(data);
         setPurdueEmail(data.purdueEmail || "");
       }
@@ -168,13 +170,25 @@ const UserProfile: React.FC = () => {
           </button>
         )}
 
-        {/* Avatar and Display Name */}
         <div className="flex flex-col items-center">
-          <div className="w-24 h-24 bg-blue-500 text-white text-3xl font-bold rounded-full flex items-center justify-center shadow-lg">
-            {user?.displayName?.charAt(0).toUpperCase()}
+          <div className="w-24 h-24 rounded-full overflow-hidden shadow-lg items-center">
+            {user?.profilePicture ? (
+              <img
+                src={user.profilePicture}
+                alt="User Avatar"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-blue-500 text-white text-3xl font-bold flex items-center justify-center">
+                {user?.displayName?.charAt(0).toUpperCase()}
+              </div>
+            )}
+
           </div>
           <h1 className="text-2xl font-bold mt-4">{user?.displayName}</h1>
         </div>
+
+
 
         {/* User Info Section */}
         <div className="mt-6 space-y-4">

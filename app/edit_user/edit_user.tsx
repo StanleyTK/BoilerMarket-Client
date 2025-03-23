@@ -15,6 +15,10 @@ const EditAccount: React.FC = () => {
   const [user, setUser] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [removeProfilePicture, setRemoveProfilePicture] = useState(false);
+
+
 
   // Form states for editable fields
   const [displayName, setDisplayName] = useState("");
@@ -49,22 +53,27 @@ const EditAccount: React.FC = () => {
 
   const handleSave = async () => {
     if (!uid) return;
-
+  
     try {
       const currentUser = auth.currentUser;
-      if (!currentUser) {
-        throw new Error("User not authenticated");
-      }
+      if (!currentUser) throw new Error("User not authenticated");
+  
       const idToken = await currentUser.getIdToken();
-
+  
       await updateUser(idToken, {
-        displayName, bio,
+        displayName,
+        bio,
+        profilePicture,
+        removeProfilePicture
       });
-      navigate(`/u/${uid}`); // Navigate back to the profile page after saving
+  
+      navigate(`/u/${uid}`);
     } catch (err) {
       setError((err as Error).message);
     }
   };
+  
+  
 
   if (loading) {
     return (
@@ -142,6 +151,60 @@ const EditAccount: React.FC = () => {
             />
           </div>
         </div>
+
+
+        {/* Profile Picture Upload */}
+        <div>
+          <label
+            className={`block ${
+              theme === "dark" ? "text-gray-300" : "text-gray-700"
+            } font-semibold mb-1`}
+          >
+            Profile Picture (PNG or JPG)
+          </label>
+          
+          <div className="relative w-full">
+            <input
+              type="file"
+              accept="image/png, image/jpeg, image/jpg"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file && !file.type.startsWith("image/")) {
+                  alert("Please upload a valid image file (PNG, JPG, JPEG).");
+                  return;
+                }
+                setProfilePicture(file || null);
+              }}
+              className="block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-500 file:text-white
+                hover:file:bg-blue-600
+                cursor-pointer"
+            />
+          </div>
+
+          {profilePicture && (
+            <p className="text-sm mt-2 text-green-600">Selected: {profilePicture.name}</p>
+          )}
+        </div>
+
+        {user?.profilePicture && (
+        <div className="mt-3">
+          <label className="inline-flex items-center">
+            <input
+              type="checkbox"
+              checked={removeProfilePicture}
+              onChange={(e) => setRemoveProfilePicture(e.target.checked)}
+              className="form-checkbox h-4 w-4 text-red-500"
+            />
+            <span className="ml-2 text-sm text-red-600">Remove current profile picture</span>
+          </label>
+        </div>
+      )}
+
+
 
         {/* Save / Cancel Buttons */}
         <div className="mt-6 flex space-x-4">
