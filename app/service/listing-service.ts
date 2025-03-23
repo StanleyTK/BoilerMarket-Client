@@ -5,29 +5,27 @@ export async function createListing(
   price: number,
   category: string,
   user: string,
-  hidden: boolean
+  hidden: boolean,
+  mediaFiles: File[]
 ) {
-  console.log(
-    JSON.stringify({ title, description, price, category, user, hidden })
-  );
-  const response = await fetch(
-    `${import.meta.env.VITE_BASE_URL}/api/listing/create/`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${idToken}`,
-      },
-      body: JSON.stringify({
-        title,
-        description,
-        price,
-        category,
-        user,
-        hidden,
-      }),
-    }
-  );
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("description", description);
+  formData.append("price", price.toString());
+  formData.append("category", category);
+  formData.append("user", user);
+  formData.append("hidden", hidden.toString());
+
+  // Add all files to formData
+  mediaFiles.forEach((file) => formData.append("media", file));
+
+  const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/listing/create/`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+    },
+    body: formData,
+  });
 
   if (!response.ok) {
     throw new Error("Failed to create listing");
@@ -35,6 +33,7 @@ export async function createListing(
 
   return response.json();
 }
+
 
 export async function deleteListing(
   idToken: string,

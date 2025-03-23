@@ -20,13 +20,15 @@ interface Listing {
   uid: string;
   hidden: boolean;
   sold: boolean;
-  profilePicture: string
+  profilePicture: string;
+  media?: string[];
 }
 
 const UserProfile: React.FC = () => {
   const auth = getAuth(getApp());
   const { uid: uidFromURL } = useParams<{ uid: string }>();
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [authChecked, setAuthChecked] = useState(false); // ✅ New
   const [user, setUser] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,26 +38,10 @@ const UserProfile: React.FC = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
 
-  const fetchUserListings = useCallback(async () => {
-      if (!firebaseUser) return;
-      setLoading(true);
-      try {
-        const idToken = await firebaseUser.getIdToken();
-        const data = await fetchListingByUser(String(firebaseUser.uid), idToken);
-        setUserListings(data);
-      } catch (error) {
-        setError((error as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    }, [firebaseUser]);
-
-  // Listen for Firebase authentication state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setFirebaseUser(user);
-      }
+      setFirebaseUser(user);
+      setAuthChecked(true); // ✅ Set when auth is resolved
     });
     return () => unsubscribe();
   }, [auth]);
@@ -76,49 +62,40 @@ const UserProfile: React.FC = () => {
   }, [firebaseUser]);
 
   useEffect(() => {
-  if (!uidFromURL) {
-    setError("Invalid user ID.");
-    setLoading(false);
-    return;
-  }
+    if (!uidFromURL || !authChecked) return;
 
-  const fetchUserData = async () => {
-    setLoading(true);
-    try {
-      const data = await getUser(uidFromURL);
-      if (!data || !data.email) {
-        setError("User not found");
-      } else {
-        console.log(data);
-        setUser(data);
-        setPurdueEmail(data.purdueEmail || "");
+    const fetchUserData = async () => {
+      setLoading(true);
+      try {
+        const data = await getUser(uidFromURL);
+        if (!data || !data.email) {
+          setError("User not found");
+        } else {
+          setUser(data);
+          setPurdueEmail(data.purdueEmail || "");
+        }
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  fetchUserData();
-
-  const getUserListings = async () => {
-    try {
-      const currentUser = auth.currentUser;
-      if (!currentUser) {
-        throw new Error("User not authenticated");
+    const getUserListings = async () => {
+      try {
+        const currentUser = auth.currentUser;
+        const idToken = await currentUser?.getIdToken();
+        if (!idToken) throw new Error("User not authenticated");
+        const data = await fetchListingByUser(uidFromURL, idToken);
+        setUserListings(data);
+      } catch (error) {
+        console.error("Error fetching user listings:", error);
       }
-      const idToken = await currentUser.getIdToken();
-      const data = await fetchListingByUser(String(uidFromURL), idToken);
-      setUserListings(data);
-    } catch (error) {
-      console.error("Error fetching user listings:", error);
-    }
-  };
-  getUserListings();
-}, [uidFromURL]);
+    };
 
-
+    fetchUserData();
+    getUserListings();
+  }, [uidFromURL, authChecked]);
 
   const handlePurdueEmailVerification = async () => {
     if (!firebaseUser) {
@@ -147,7 +124,6 @@ const UserProfile: React.FC = () => {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"}`}>
@@ -174,10 +150,12 @@ const UserProfile: React.FC = () => {
           <div className="w-24 h-24 rounded-full overflow-hidden shadow-lg items-center">
             {user?.profilePicture ? (
               <img
-                src={user.profilePicture}
+                src={`${user.profilePicture}?t=${new Date().getTime()}`}
                 alt="User Avatar"
                 className="w-full h-full object-cover"
               />
+
+
             ) : (
               <div className="w-full h-full bg-blue-500 text-white text-3xl font-bold flex items-center justify-center">
                 {user?.displayName?.charAt(0).toUpperCase()}
