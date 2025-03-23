@@ -7,9 +7,10 @@ import { checkEmailAuth } from "~/service/user-service";
 import { useTheme } from "~/components/ThemeContext";
 
 const Create_Listing: React.FC = () => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [verifying, setVerifying] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -17,7 +18,6 @@ const Create_Listing: React.FC = () => {
   const auth = getAuth(getApp());
   const { theme } = useTheme();
 
-  // Verify email authentication on component mount.
   useEffect(() => {
     const verifyEmail = async () => {
       const currentUser = auth.currentUser;
@@ -28,8 +28,7 @@ const Create_Listing: React.FC = () => {
       try {
         const idToken = await currentUser.getIdToken();
         await checkEmailAuth(idToken);
-      } catch (error) {
-        // If email verification fails, redirect to profile page.
+      } catch {
         navigate(`/u/${uid}`);
         return;
       }
@@ -44,9 +43,8 @@ const Create_Listing: React.FC = () => {
     setSubmitting(true);
     try {
       const currentUser = auth.currentUser;
-      if (!currentUser) {
-        throw new Error("User not authenticated");
-      }
+      if (!currentUser) throw new Error("User not authenticated");
+
       const idToken = await currentUser.getIdToken();
       await createListing(
         idToken,
@@ -55,9 +53,10 @@ const Create_Listing: React.FC = () => {
         Number(price),
         "None",
         String(uid),
-        false
+        false,
+        mediaFiles
       );
-      // Navigate back to the profile page after successful creation.
+
       navigate(`/u/${uid}`);
     } catch (error) {
       console.error("Error creating listing:", error);
@@ -65,81 +64,67 @@ const Create_Listing: React.FC = () => {
     }
   };
 
-  // Show a loading screen while verifying or submitting.
   if (verifying || submitting) {
     return (
-      <div
-        className={`min-h-screen flex items-center justify-center ${
-          theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"
-        }`}
-      >
+      <div className={`min-h-screen flex items-center justify-center ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"}`}>
         <p className="text-2xl">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div
-      className={`min-h-screen flex items-center justify-center p-6 ${
-        theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"
-      }`}
-    >
-      <form
-        onSubmit={handleCreateListing}
-        className={`w-80 p-8 rounded-lg shadow-md ${
-          theme === "dark" ? "bg-gray-700" : "bg-gray-300"
-        }`}
-      >
-        <h2
-          className={`text-2xl font-bold text-center mb-6 ${
-            theme === "dark" ? "text-white" : "text-gray-800"
-          }`}
-        >
-          Create Listing
-        </h2>
+    <div className={`min-h-screen flex items-center justify-center p-6 ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"}`}>
+      <form onSubmit={handleCreateListing} className={`w-full max-w-lg p-8 rounded-lg shadow-md space-y-5 ${theme === "dark" ? "bg-gray-700" : "bg-gray-300"}`}>
+        <h2 className="text-3xl font-bold text-center mb-6">Create a Listing</h2>
+
         <input
           type="text"
           placeholder="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          className={`w-full mb-4 p-2 border rounded ${
-            theme === "dark"
-              ? "bg-gray-600 text-white border-gray-500"
-              : "bg-gray-200 text-black border-gray-300"
-          }`}
+          className="w-full p-3 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-black"
         />
-        <input
-          type="text"
+
+        <textarea
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           required
-          className={`w-full mb-4 p-2 border rounded ${
-            theme === "dark"
-              ? "bg-gray-600 text-white border-gray-500"
-              : "bg-gray-200 text-black border-gray-300"
-          }`}
+          rows={4}
+          className="w-full p-3 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-black"
         />
+
         <input
           type="number"
           placeholder="Price"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           required
-          className={`w-full mb-4 p-2 border rounded ${
-            theme === "dark"
-              ? "bg-gray-600 text-white border-gray-500"
-              : "bg-gray-200 text-black border-gray-300"
-          }`}
+          className="w-full p-3 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-black"
         />
+
+        <div>
+          <label className="block mb-2 font-semibold">Upload Images or Videos</label>
+          <input
+            type="file"
+            accept="image/*,video/*"
+            multiple
+            onChange={(e) => setMediaFiles(Array.from(e.target.files || []))}
+            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+          />
+          {mediaFiles.length > 0 && (
+            <ul className="mt-2 text-sm text-green-600 list-disc list-inside">
+              {mediaFiles.map((file, i) => (
+                <li key={i}>{file.name}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+
         <button
           type="submit"
-          className={`w-full py-2 rounded transition ${
-            theme === "dark"
-              ? "bg-gray-800 hover:bg-gray-700 text-white"
-              : "bg-gray-800 hover:bg-gray-700 text-white"
-          }`}
+          className="w-full py-3 rounded bg-green-500 hover:bg-green-600 text-white font-bold transition"
         >
           Post Listing
         </button>
