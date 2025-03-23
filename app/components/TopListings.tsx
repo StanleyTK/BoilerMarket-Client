@@ -23,7 +23,7 @@ const TopListings: React.FC = () => {
     const getListings = async () => {
       try {
         const data = await fetchTopListings();
-        // console.log(data);
+        console.log(data);
         setListings(data);
       } catch (error) {
         console.error('Error fetching top listings:', error);
