@@ -13,5 +13,6 @@ export default [
     route("search", "./search/search.tsx"),
     route("u/:uid/createlisting", "./create_listing/create_listing.tsx"),
     route("about", "./about/about.tsx"),
+    route("chat", "./chat_page/chat_page.tsx"),
   ]),
 ] satisfies RouteConfig;
