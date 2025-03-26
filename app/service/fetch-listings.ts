@@ -22,8 +22,8 @@ export async function fetchAllListings(idToken: string, sortBy: string, sortDire
             'Authorization': `Bearer ${idToken}`,
         },
         body: JSON.stringify({
-            sortBy,
-            sortDirection,
+            sort: sortBy,
+            dir: sortDirection,
         }),
     });
 
@@ -57,8 +57,8 @@ export async function fetchListingByKeyword(keyword: string, idToken: string, so
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${idToken}`,
             body: JSON.stringify({
-                sortBy,
-                sortDirection,
+                sort: sortBy,
+                dir: sortDirection,
             }),
         },
     });
