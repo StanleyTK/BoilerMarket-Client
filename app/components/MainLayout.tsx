@@ -13,6 +13,10 @@ interface SearchContextProps {
   listings: any[];
   setListings: React.Dispatch<React.SetStateAction<any[]>>;
   handleSearch: () => Promise<void>;
+  sortBy: string;
+  setSortBy: React.Dispatch<React.SetStateAction<string>>;
+  sortDirection: "asc" | "desc";
+  setSortDirection: React.Dispatch<React.SetStateAction<"asc" | "desc">>;
 }
 
 const SearchContext = createContext<SearchContextProps | undefined>(undefined);
@@ -29,6 +33,8 @@ export const useSearch = () => {
 const MainLayout: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [listings, setListings] = useState<any[]>([]);
+  const [sortBy, setSortBy] = useState('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const handleSearch = async () => {
     const auth = getAuth(getApp());
@@ -40,9 +46,9 @@ const MainLayout: React.FC = () => {
     try {
       let fetchedListings;
       if (searchQuery === '') {
-        fetchedListings = await fetchAllListings(idToken);
+        fetchedListings = await fetchAllListings(idToken, sortBy, sortDirection);
       } else {
-        fetchedListings = await fetchListingByKeyword(searchQuery, idToken);
+        fetchedListings = await fetchListingByKeyword(searchQuery, idToken, sortBy, sortDirection);
       }
       setListings(fetchedListings);
       console.log('Fetched listings:', fetchedListings);
@@ -53,7 +59,7 @@ const MainLayout: React.FC = () => {
 
   return (
     <ThemeProvider>
-      <SearchContext.Provider value={{ searchQuery, setSearchQuery, listings, setListings, handleSearch }}>
+      <SearchContext.Provider value={{ searchQuery, setSearchQuery, listings, setListings, handleSearch, sortBy, setSortBy, sortDirection, setSortDirection }}>
         <div className="min-h-screen bg-gray-100 dark:bg-gray-800 text-black dark:text-white">
           <Navbar />
           <Footer />
