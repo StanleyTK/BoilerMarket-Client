@@ -1,4 +1,4 @@
-export async function fetchAllListings(idToken: string) {
+export async function basicFetchAllListings(idToken: string) {
     const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/listing/get/`, {
         method: 'GET',
         headers: {
@@ -14,12 +14,52 @@ export async function fetchAllListings(idToken: string) {
     return response.json();
 }
 
-export async function fetchListingByKeyword(keyword: string, idToken: string) {
+export async function fetchAllListings(idToken: string, sortBy: string, sortDirection: "asc" | "desc") {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/listing/get/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+            sortBy,
+            sortDirection,
+        }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch listings');
+    }
+
+    return response.json();
+}
+
+export async function basicFetchListingByKeyword(keyword: string, idToken: string) {
     const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/listing/get/${keyword}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${idToken}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch listings with keyword: ' + keyword);
+    }
+
+    return response.json();
+}
+
+export async function fetchListingByKeyword(keyword: string, idToken: string, sortBy: string, sortDirection: "asc" | "desc") {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/listing/get/${keyword}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+            body: JSON.stringify({
+                sortBy,
+                sortDirection,
+            }),
         },
     });
 
@@ -58,7 +98,7 @@ export async function fetchTopListings() {
     if (!response.ok) {
         throw new Error('Failed');
     }
-  
+
 
     return response.json();
 }
