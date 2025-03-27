@@ -33,8 +33,8 @@ export const useSearch = () => {
 const MainLayout: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [listings, setListings] = useState<any[]>([]);
-  const [sortBy, setSortBy] = useState('date');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortBy, setSortBy] = useState('dateListed');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   const handleSearch = async () => {
     const auth = getAuth(getApp());
