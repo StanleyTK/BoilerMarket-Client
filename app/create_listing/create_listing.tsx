@@ -13,6 +13,7 @@ const Create_Listing: React.FC = () => {
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [verifying, setVerifying] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { uid } = useParams<{ uid: string }>();
   const auth = getAuth(getApp());
@@ -40,6 +41,19 @@ const Create_Listing: React.FC = () => {
 
   const handleCreateListing = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null); // Clear any previous error
+
+    // Frontend validation
+    if (!title.trim() || !description.trim() || !price.trim()) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+
+    if (mediaFiles.length === 0) {
+      setError("Please upload at least one image or video.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const currentUser = auth.currentUser;
@@ -60,6 +74,7 @@ const Create_Listing: React.FC = () => {
       navigate(`/u/${uid}`);
     } catch (error) {
       console.error("Error creating listing:", error);
+      setError("An error occurred while creating the listing. Please try again.");
       setSubmitting(false);
     }
   };
@@ -121,6 +136,12 @@ const Create_Listing: React.FC = () => {
             </ul>
           )}
         </div>
+
+        {error && (
+          <div className="text-red-600 font-medium text-center">
+            {error}
+          </div>
+        )}
 
         <button
           type="submit"

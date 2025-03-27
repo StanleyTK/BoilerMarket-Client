@@ -41,7 +41,7 @@ const UserProfile: React.FC = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setFirebaseUser(user);
-      setAuthChecked(true); // ✅ Set when auth is resolved
+      setAuthChecked(true);
     });
     return () => unsubscribe();
   }, [auth]);
