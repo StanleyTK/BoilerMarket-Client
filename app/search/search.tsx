@@ -5,9 +5,8 @@ import { useTheme } from "~/components/ThemeContext";
 import "./search.css";
 
 const Search: React.FC = () => {
-  const { listings, sortBy, setSortBy } = useSearch();
+  const { listings, sortBy, setSortBy, sortDirection, setSortDirection } = useSearch();
   const { theme } = useTheme();
-  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">("asc");
 
   const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSortBy(event.target.value);
@@ -28,7 +27,7 @@ const Search: React.FC = () => {
             Sort:
           </label>
           <select id="sort" className="sort-select" value={sortBy} onChange={handleSortChange}>
-            <option value="date">Date</option>
+            <option value="dateListed">Date</option>
             <option value="price">Price</option>
           </select>
           <button
