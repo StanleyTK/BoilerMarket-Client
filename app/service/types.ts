@@ -9,3 +9,12 @@ export interface UserProfileData {
     admin: boolean;
     banned: boolean;
 }
+
+export interface InboxRoomData {
+    rid: string;
+    seller: string;
+    buyer: string;
+    listingTitle: string;
+    listingId: string;
+    recentMessage: string;
+}
