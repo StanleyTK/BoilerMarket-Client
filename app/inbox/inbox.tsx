@@ -16,32 +16,6 @@ const Inbox: React.FC = () => {
     // Placeholder
   };
 
-  // useEffect(() => {
-  //   const fetchRooms = async () => {
-  //     const currentUser = auth.currentUser;
-  //     console.log('currentUser:', currentUser);
-
-  //     if (!currentUser) {
-  //       navigate("/login");
-  //       return;
-  //     }
-
-  //     try {
-  //       const idToken = await currentUser.getIdToken();
-  //       const rooms = await getRooms(idToken);
-  //       setRooms(rooms);
-  //       setError(null);
-  //     } catch (error) {
-  //       console.error("Error getting rooms:", error);
-  //       setError("Failed to get rooms");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchRooms();
-  // }, [auth, navigate]);
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
