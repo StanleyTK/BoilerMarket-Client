@@ -6,6 +6,7 @@ import { faUserPen } from '@fortawesome/free-solid-svg-icons/faUserPen';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { useState } from "react";
 import { updateListing } from '~/service/listing-service';
+import { NewChat } from './NewChat';
 
 
 interface Listing {
@@ -86,5 +87,6 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, userOwnsListi
       </p>
       <p className="mt-2 text-gray-600 text-sm">{listing.description}</p>
     </div>
+    <NewChat listingId={listing.id} />
   </div>
 );
