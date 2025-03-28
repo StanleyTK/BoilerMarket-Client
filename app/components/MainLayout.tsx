@@ -4,7 +4,7 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { ThemeProvider } from "./ThemeContext";
 import { getAuth } from 'firebase/auth';
-import { fetchAllListings, fetchListingByKeyword } from "../service/fetch-listings";
+import { fetchAllListings } from "../service/fetch-listings";
 import { getApp } from "firebase/app";
 
 interface SearchContextProps {
@@ -45,11 +45,7 @@ const MainLayout: React.FC = () => {
     const idToken = await currentUser.getIdToken();
     try {
       let fetchedListings;
-      if (searchQuery === '') {
-        fetchedListings = await fetchAllListings(idToken, sortBy, sortDirection);
-      } else {
-        fetchedListings = await fetchListingByKeyword(searchQuery, idToken, sortBy, sortDirection);
-      }
+      fetchedListings = await fetchAllListings(idToken, sortBy, sortDirection, searchQuery);
       setListings(fetchedListings);
       console.log('Fetched listings:', fetchedListings);
     } catch (e) {
