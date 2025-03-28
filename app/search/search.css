@@ -33,12 +33,15 @@
     width: 100%;
 }
 
+.filter-label,
 .sort-label {
     font-size: 0.875rem;
     font-weight: 500;
     margin-right: 8px;
+    white-space: nowrap;
 }
 
+.filter-select,
 .sort-select {
     width: 100%;
     max-width: 200px;
@@ -51,10 +54,15 @@
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.filter-select:focus,
 .sort-select:focus {
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
     outline: none;
+}
+
+.filter-select {
+    margin-right: 16px;
 }
 
 /* Styling for the sort direction button */

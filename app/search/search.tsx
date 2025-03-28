@@ -5,12 +5,28 @@ import { useTheme } from "~/components/ThemeContext";
 import "./search.css";
 
 const Search: React.FC = () => {
-  const { listings, sortBy, setSortBy, sortDirection, setSortDirection } = useSearch();
+  const { listings, sortBy, setSortBy, sortDirection, setSortDirection, categoryFilter, setCategoryFilter, priceFilter, setPriceFilter, dateFilter, setDateFilter, locationFilter, setLocationFilter } = useSearch();
   const { theme } = useTheme();
 
   const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSortBy(event.target.value);
   };
+
+  const handleCategoryFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setCategoryFilter(event.target.value);
+  }
+
+  const handlePriceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setPriceFilter(event.target.value);
+  }
+
+  const handleDateFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setDateFilter(event.target.value);
+  }
+
+  const handleLocationFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setLocationFilter(event.target.value);
+  }
 
   const toggleSortDirection = () => {
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -22,20 +38,60 @@ const Search: React.FC = () => {
         }`}
     >
       <div className="p-6">
-        <div className="flex items-center gap-2">
-          <label htmlFor="sort" className="sort-label">
-            Sort:
-          </label>
-          <select id="sort" className="sort-select" value={sortBy} onChange={handleSortChange}>
-            <option value="dateListed">Date</option>
-            <option value="price">Price</option>
-          </select>
-          <button
-            className="sort-direction"
-            onClick={toggleSortDirection}
-          >
-            {sortDirection === "asc" ? "▲" : "▼"}
-          </button>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <label htmlFor="sort" className="sort-label">
+              Sort:
+            </label>
+            <select id="sort" className="sort-select" value={sortBy} onChange={handleSortChange}>
+              <option value="dateListed">Date</option>
+              <option value="price">Price</option>
+            </select>
+            <button
+              className="sort-direction"
+              onClick={toggleSortDirection}
+            >
+              {sortDirection === "asc" ? "▲" : "▼"}
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label htmlFor="filter-category" className="filter-label">
+              Category:
+            </label>
+            <select id="filter-category" className="filter-select" value={categoryFilter} onChange={handleCategoryFilterChange}>
+              <option value="">All</option>
+              <option value="electronics">Electronics</option>
+              <option value="appliances">Appliances</option>
+            </select>
+
+            <label htmlFor="filter-price" className="filter-label">
+              Price Range:
+            </label>
+            <select id="filter-price" className="filter-select" value={priceFilter} onChange={handlePriceFilterChange}>
+              <option value="">Any</option>
+              <option value="0-50">$0 - $50</option>
+              <option value="50-100">$50 - $100</option>
+            </select>
+
+            <label htmlFor="filter-date" className="filter-label">
+              Date Listed:
+            </label>
+            <select id="filter-date" className="filter-select" value={dateFilter} onChange={handleDateFilterChange}>
+              <option value="">Any</option>
+              <option value="week">Past Week</option>
+              <option value="month">Past Month</option>
+            </select>
+
+            <label htmlFor="filter-location" className="filter-label">
+              Location:
+            </label>
+            <select id="filter-location" className="filter-select" value={locationFilter} onChange={handleLocationFilterChange}>
+              <option value="">Any</option>
+              <option value="chauncy">Chauncy Area</option>
+              <option value="east campus">East Campus</option>
+            </select>
+          </div>
         </div>
       </div>
 
