@@ -14,6 +14,6 @@ export default [
     route("u/:uid/createlisting", "./create_listing/create_listing.tsx"),
     route("about", "./about/about.tsx"),
     route("chat", "./chat_page/chat_page.tsx"),
-    route("inbox", "./inbox/inbox.tsx"),
+    route("inbox/:rid", "./inbox/inbox.tsx"),
   ]),
 ] satisfies RouteConfig;

@@ -22,3 +22,24 @@ export async function getRooms(idToken: string): Promise<InboxRoomData[]> {
     });
     return [];
 }
+
+export async function createRoom(idToken: string, lid: number, uid: string): Promise<number> {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/message/create_room/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ lid, uid }),
+        })
+        if (!response.ok) {
+            throw new Error('Failed to create room');
+        }
+        const data = await response.json();
+        return data.rid as number;
+    } catch (error) {
+        console.error('Error creating room:', error);
+        throw error; // Rethrow the error for further handling
+    }
+}

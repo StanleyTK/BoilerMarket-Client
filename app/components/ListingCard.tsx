@@ -6,7 +6,9 @@ import { faUserPen } from '@fortawesome/free-solid-svg-icons/faUserPen';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { useState } from "react";
 import { updateListing } from '~/service/listing-service';
-import { NewChat } from './NewChat';
+import { getAuth } from "firebase/auth";
+import { createRoom } from '~/service/chat-service';
+import { useNavigate } from 'react-router';
 
 
 interface Listing {
@@ -28,7 +30,33 @@ interface ListingCardProps {
   userOwnsListing?: boolean;
 }
 
-export const ListingCard: React.FC<ListingCardProps> = ({ listing, userOwnsListing }) => (
+const handleCreateChat = async (listingId: number, navigate: ReturnType<typeof useNavigate>) => {
+  const auth = getAuth();
+  const user = auth.currentUser;
+  if (!user) {
+    console.error("User not authenticated");
+    return;
+  }
+  const idToken = await user.getIdToken();
+
+  createRoom(idToken, listingId, user.uid)
+  .then((roomId) => {
+    if (roomId == -1) {
+      console.error("Error creating chat room - room ID -1 indicates an error");
+      return;
+    }
+    console.log("Chat room created with ID:", roomId);
+    navigate(`/inbox/${roomId}`,); // navigate to the chat room
+  })
+  .catch((error) => {
+    console.error("Error creating chat room:", error);
+  })
+}
+
+export const ListingCard: React.FC<ListingCardProps> = ({ listing, userOwnsListing }) => {
+  const navigate = useNavigate();
+
+  return (
   <div className="relative bg-white rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-[1.03]">
     {userOwnsListing ? (
       <>
@@ -87,6 +115,21 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, userOwnsListi
       </p>
       <p className="mt-2 text-gray-600 text-sm">{listing.description}</p>
     </div>
-    <NewChat listingId={listing.id} />
+    <button 
+      onClick={() => handleCreateChat(listing.id, navigate)} 
+      style={{
+          backgroundColor: "#007BFF",
+          color: "white",
+          border: "none",
+          padding: "10px 20px",
+          borderRadius: "5px",
+          cursor: "pointer",
+          fontSize: "16px",
+          marginBottom: "10px",
+      }}
+      >
+      Open Chat
+    </button>
   </div>
-);
+)
+};
