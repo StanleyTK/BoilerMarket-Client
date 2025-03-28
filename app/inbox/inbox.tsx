@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import type { InboxRoomData } from '../service/types';
 import { getRooms } from '../service/chat-service';
 import { getApp } from 'firebase/app';
@@ -8,6 +8,7 @@ import { getApp } from 'firebase/app';
 const Inbox: React.FC = () => {
   const auth = getAuth(getApp());
   const navigate = useNavigate();
+  const { rid } = useParams<{ rid: string }>();
   const [rooms, setRooms] = useState<InboxRoomData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
