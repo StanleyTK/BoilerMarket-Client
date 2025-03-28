@@ -57,7 +57,7 @@ const MainLayout: React.FC = () => {
     const idToken = await currentUser.getIdToken();
     try {
       let fetchedListings;
-      fetchedListings = await fetchAllListings(idToken, sortBy, sortDirection, searchQuery);
+      fetchedListings = await fetchAllListings(idToken, sortBy, sortDirection, categoryFilter, dateFilter, priceFilter, locationFilter, searchQuery);
       setListings(fetchedListings);
       console.log('Fetched listings:', fetchedListings);
     } catch (e) {
