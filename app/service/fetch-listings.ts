@@ -1,4 +1,4 @@
-export async function fetchAllListings(idToken: string, sortBy: string, sortDirection: "asc" | "desc", keyword?: string) {
+export async function fetchAllListings(idToken: string, sortBy: string, sortDirection: "asc" | "desc", categoryFilter: string, dateFilter: string, priceFilter: string, locationFilter: string, keyword: string) {
     const body: any = {
         sort: sortBy,
         dir: sortDirection,
@@ -7,6 +7,22 @@ export async function fetchAllListings(idToken: string, sortBy: string, sortDire
     if (keyword) {
         body.keyword = keyword;
     };
+
+    if (categoryFilter) {
+        body.categoryFilter = categoryFilter;
+    };
+
+    if (dateFilter) {
+        body.dateFilter = dateFilter;
+    }
+
+    if (priceFilter) {
+        body.priceFilter = priceFilter;
+    };
+
+    if (locationFilter) {
+        body.locationFilter = locationFilter;
+    }
 
     const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/listing/get/`, {
         method: 'POST',
