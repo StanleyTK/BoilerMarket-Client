@@ -9,6 +9,7 @@ import { useTheme } from "~/components/ThemeContext";
 const Create_Listing: React.FC = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [verifying, setVerifying] = useState(true);
@@ -51,7 +52,7 @@ const Create_Listing: React.FC = () => {
         title,
         description,
         Number(price),
-        "None",
+        category,
         String(uid),
         false,
         mediaFiles
@@ -94,6 +95,21 @@ const Create_Listing: React.FC = () => {
           rows={4}
           className="w-full p-3 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-black"
         />
+
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          required
+          className="w-full p-3 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-black"
+        >
+          <option value="" disabled>Select a category</option>
+          <option value="electronics">Electronics</option>
+          <option value="appliances">Applicances</option>
+          <option value="furniture">Furniture</option>
+          <option value="clothing">Clothing</option>
+          <option value="books">Books</option>
+          <option value="other">Other</option>
+        </select>
 
         <input
           type="number"
