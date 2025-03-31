@@ -46,6 +46,8 @@ const Search: React.FC = () => {
             <select id="sort" className="sort-select" value={sortBy} onChange={handleSortChange}>
               <option value="dateListed">Date</option>
               <option value="price">Price</option>
+              <option value="category">Category</option>
+              <option value="location">Location</option>
             </select>
             <button
               className="sort-direction"
