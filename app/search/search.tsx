@@ -76,6 +76,8 @@ const Search: React.FC = () => {
               <option value="">Any</option>
               <option value="0-50">$0 - $50</option>
               <option value="50-100">$50 - $100</option>
+              <option value="100-200">$100 - $200</option>
+              <option value="200-500">$200 - $500</option>
             </select>
 
             <label htmlFor="filter-date" className="filter-label">
@@ -93,7 +95,9 @@ const Search: React.FC = () => {
             <select id="filter-location" className="filter-select" value={locationFilter} onChange={handleLocationFilterChange}>
               <option value="">Any</option>
               <option value="chauncy">Chauncy Area</option>
-              <option value="east campus">East Campus</option>
+              <option value="west campus">West Campus</option>
+              <option value="ross ade">Ross Ade Stadium</option>
+              <option value="lafayette">Lafayette</option>
             </select>
           </div>
         </div>
