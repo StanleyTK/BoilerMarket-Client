@@ -62,7 +62,11 @@ const Search: React.FC = () => {
             <select id="filter-category" className="filter-select" value={categoryFilter} onChange={handleCategoryFilterChange}>
               <option value="">All</option>
               <option value="electronics">Electronics</option>
-              <option value="appliances">Appliances</option>
+              <option value="appliances">Applicances</option>
+              <option value="furniture">Furniture</option>
+              <option value="clothing">Clothing</option>
+              <option value="books">Books</option>
+              <option value="other">Other</option>
             </select>
 
             <label htmlFor="filter-price" className="filter-label">
