@@ -13,7 +13,7 @@ const Inbox: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const handleRoomClick = (roomId: string) => {
+  const handleRoomClick = (roomId: number) => {
     // Placeholder
   };
 
@@ -48,24 +48,24 @@ const Inbox: React.FC = () => {
     return <div>{error}</div>;
   }
 
-  if (!rooms.length) {
-    return <div>No rooms found</div>;
-  }
-
   return (
     <div>
-        {rooms.map((room) => (
+      {rooms.length === 0 ? (<div>No rooms found</div>) : (
+        <div>
+          {rooms.map((room) => (
             <div 
-                key={room.rid} 
-                onClick={() => handleRoomClick(room.rid)} 
-                style={{ cursor: 'pointer', padding: '10px', border: '1px solid #ccc', marginBottom: '10px' }}
+              key={room.rid} 
+              onClick={() => handleRoomClick(room.rid)} 
+              style={{ cursor: 'pointer', padding: '10px', border: '1px solid #ccc', marginBottom: '10px' }}
             >
-                <h3>{room.listingTitle}</h3>
-                <p>Seller: {room.seller}</p>
-                <p>Buyer: {room.buyer}</p>
-                <p>Last Message: {room.recentMessage}</p>
+              <h3>{room.listingName}</h3>
+              <p>Seller: {room.seller}</p>
+              <p>Buyer: {room.buyer}</p>
+              <p>Last Message: {room.recentMessage}</p>
             </div>
-        ))}
+          ))}
+        </div>
+      )}
     </div>
   );
 }

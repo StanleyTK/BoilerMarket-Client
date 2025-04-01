@@ -11,10 +11,10 @@ export interface UserProfileData {
 }
 
 export interface InboxRoomData {
-    rid: string;
+    rid: number;
     seller: string;
     buyer: string;
-    listingTitle: string;
-    listingId: string;
+    listingName: string;
+    listingId: number;
     recentMessage: string;
 }
