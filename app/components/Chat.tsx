@@ -1,17 +1,28 @@
+import { getApp } from "firebase/app";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
+import { getRoom } from "~/service/chat-service";
+import type { RoomData, UserProfileData } from "~/service/types";
+import { getUser } from "~/service/user-service";
 
 interface ChatProps {
-  roomName: string;
-  username: string;
+  rid: number;
 }
 
-const Chat: React.FC<ChatProps> = ({ roomName, username }) => {
+const Chat: React.FC<ChatProps> = ({ rid }) => {
+  const auth = getAuth(getApp());
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>([]);
   const [message, setMessage] = useState("");
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [roomData, setRoomData] = useState<RoomData | null>(null);
+  const [userData, setUserData] = useState<UserProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://localhost:8000/ws/chat/${roomName}/`);
+    const ws = new WebSocket(`ws://localhost:8000/ws/chat/${rid}/`);
     
     ws.onopen = () => console.log("Connected to WebSocket");
     ws.onmessage = (event) => {
@@ -23,18 +34,50 @@ const Chat: React.FC<ChatProps> = ({ roomName, username }) => {
     setSocket(ws);
 
     return () => ws.close();
-  }, [roomName]);
+  }, [rid]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const idToken = await user.getIdToken();
+        const roomData = await getRoom(idToken, rid);
+        const userData = await getUser(user.uid);
+        setUserData(userData);
+        setRoomData(roomData);
+        setError(null);
+      } catch (error) {
+        console.error("Error getting data:", error);
+        setError(`Failed to get data: ${error}`);
+      } finally {
+        setLoading(false);
+      }
+    });
+    return () => unsubscribe();
+  }, [auth, navigate]);
 
   const sendMessage = () => {
     if (socket && message.trim()) {
-      socket.send(JSON.stringify({ sender: username, message }));
+      socket.send(JSON.stringify({ sender: userData?.displayName, message }));
       setMessage("");
     }
   };
 
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
+  }
+
   return (
     <div>
-      <h2>Chat Room: {roomName}</h2>
+      <h2>Chat Room: {roomData?.listingName}</h2>
       <div>
         {messages.map((msg, index) => (
           <p key={index}><strong>{msg.sender}:</strong> {msg.text}</p>
