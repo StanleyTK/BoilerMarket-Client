@@ -1,31 +1,29 @@
 import type { InboxRoomData } from "./types";
 
 export async function getRooms(idToken: string): Promise<InboxRoomData[]> {
-    fetch(`${import.meta.env.VITE_BASE_URL}/api/message/get_rooms/`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${idToken}`,
-        },
-    })
-    .then(response => {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/message/get_rooms/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+        });
         if (!response.ok) {
             throw new Error('Failed to get rooms');
         }
-        return response.json();
-    })
-    .then(data => {
-        return data as InboxRoomData[];
-    })
-    .catch(error => {
+        const data = await response.json();
+        const roomsArr = Object.values(data);
+        return roomsArr[0] as InboxRoomData[];
+    } catch (error) {
         console.error('Error getting rooms:', error);
-    });
-    return [];
+        throw error; // Rethrow the error for further handling
+    }
 }
 
 export async function createRoom(idToken: string, lid: number, uid: string): Promise<number> {
     try {
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/message/create_room/`, {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/message/get_or_create_room/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
