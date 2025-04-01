@@ -18,3 +18,18 @@ export interface InboxRoomData {
     listingId: number;
     recentMessage: string;
 }
+
+export interface RoomData {
+    rid: number;
+    seller: string;
+    buyer: string;
+    listingName: string;
+    listingId: number;
+}
+
+export interface MessageData {
+    mid: number;
+    sender: string;
+    content: string;
+    timeSent: Date;
+}
