@@ -2,8 +2,8 @@ import { getApp } from "firebase/app";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { getRoom } from "~/service/chat-service";
-import type { RoomData, UserProfileData } from "~/service/types";
+import { getMessages, getRoom } from "~/service/chat-service";
+import type { MessageData, RoomData, UserProfileData } from "~/service/types";
 import { getUser } from "~/service/user-service";
 
 interface ChatProps {
@@ -13,7 +13,7 @@ interface ChatProps {
 const Chat: React.FC<ChatProps> = ({ rid }) => {
   const auth = getAuth(getApp());
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<{ sender: string; text: string }[]>([]);
+  const [messages, setMessages] = useState<MessageData[]>([]);
   const [message, setMessage] = useState("");
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [roomData, setRoomData] = useState<RoomData | null>(null);
@@ -49,7 +49,8 @@ const Chat: React.FC<ChatProps> = ({ rid }) => {
       ws.onopen = () => console.log("Connected to WebSocket");
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        setMessages((prev) => [...prev, { sender: data.sender, text: data.message }]);
+        console.log(data);
+        setMessages((prev) => [...prev, { sender: data.sender, content: data.message, timeSent: data.timeSent }]);
       };
       ws.onclose = () => console.log("WebSocket disconnected");
 
@@ -72,6 +73,8 @@ const Chat: React.FC<ChatProps> = ({ rid }) => {
         const idToken = await user.getIdToken();
         const roomData = await getRoom(idToken, rid);
         const userData = await getUser(user.uid);
+        const messages = await getMessages(idToken, rid);
+        setMessages(messages);
         setUserData(userData);
         setRoomData(roomData);
         setError(null);
@@ -105,7 +108,12 @@ const Chat: React.FC<ChatProps> = ({ rid }) => {
       <h2>Chat Room: {roomData?.listingName}</h2>
       <div>
         {messages.map((msg, index) => (
-          <p key={index}><strong>{msg.sender}:</strong> {msg.text}</p>
+          <div key={index}>
+            <p style={{ display: "inline" }}><strong>{msg.sender}:</strong> {msg.content}</p>
+            <span style={{ display: "inline", fontSize: "0.8em", color: "gray", marginLeft: "10px" }}>
+              {new Date(msg.timeSent).toLocaleTimeString()}
+            </span>
+          </div>
         ))}
       </div>
       <input value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Type a message..." />

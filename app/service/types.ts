@@ -28,8 +28,7 @@ export interface RoomData {
 }
 
 export interface MessageData {
-    mid: number;
     sender: string;
     content: string;
-    timeSent: Date;
+    timeSent: string;
 }

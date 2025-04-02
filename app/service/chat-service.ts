@@ -33,8 +33,7 @@ export async function getMessages(idToken: string, rid: number): Promise<Message
             throw new Error('Failed to get messages');
         }
         const data = await response.json();
-        console.log(data);
-        return data as MessageData[];
+        return (Object.values(data)[0]) as MessageData[];
     } catch (error) {
         console.error('Error getting messages:', error);
         throw error; // Rethrow the error for further handling
