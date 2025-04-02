@@ -53,6 +53,9 @@ const UserProfile: React.FC = () => {
           const idToken = await firebaseUser.getIdToken();
           await checkEmailAuth(idToken);
           setEmailAuthVerified(true);
+
+          console.log(idToken);
+          
         } catch (error) {
           setEmailAuthVerified(false);
         }
