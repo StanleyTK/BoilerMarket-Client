@@ -4,6 +4,7 @@ export async function createListing(
   description: string,
   price: number,
   category: string,
+  location: string,
   user: string,
   hidden: boolean,
   mediaFiles: File[]
@@ -13,6 +14,7 @@ export async function createListing(
   formData.append("description", description);
   formData.append("price", price.toString());
   formData.append("category", category);
+  formData.append("location", location);
   formData.append("user", user);
   formData.append("hidden", hidden.toString());
 
