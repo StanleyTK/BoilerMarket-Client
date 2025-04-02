@@ -72,7 +72,6 @@ const Inbox: React.FC = () => {
         )}
       </div>
       <div style={{ flex: '2', padding: '20px' }}>
-        <h2>Chat Box</h2>
         {selectedRid === -1 ? (
           <p>Select a room to start chatting.</p>
         ) : (
