@@ -100,6 +100,7 @@ const Search: React.FC = () => {
               <option value="west campus">West Campus</option>
               <option value="ross ade">Ross Ade Stadium</option>
               <option value="lafayette">Lafayette</option>
+              <option value="other">Other</option>
             </select>
           </div>
         </div>
