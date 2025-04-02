@@ -20,21 +20,46 @@ const Chat: React.FC<ChatProps> = ({ rid }) => {
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [idToken, setIdToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://localhost:8000/ws/chat/${rid}/`);
-    
-    ws.onopen = () => console.log("Connected to WebSocket");
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setMessages((prev) => [...prev, { sender: data.sender, text: data.message }]);
+    const getIdToken = async () => {
+      try {
+        const idToken = await auth.currentUser?.getIdToken();
+        if (!idToken) {
+          throw new Error("User not authenticated");
+        }
+        setIdToken(idToken);
+      } catch (error) {
+        console.error("Failed to get ID token:", error);
+        setError(`Failed to get ID token: ${error}`);
+      }
     };
-    ws.onclose = () => console.log("WebSocket disconnected");
 
-    setSocket(ws);
+    getIdToken();
+  }, [auth]);
 
-    return () => ws.close();
-  }, [rid]);
+  useEffect(() => {
+    const initializeWebSocket = async () => {
+      if (!idToken || !rid) {
+        return
+      }
+      const ws = new WebSocket(`ws://localhost:8000/ws/chat/${rid}/?token=${idToken}`);
+  
+      ws.onopen = () => console.log("Connected to WebSocket");
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        setMessages((prev) => [...prev, { sender: data.sender, text: data.message }]);
+      };
+      ws.onclose = () => console.log("WebSocket disconnected");
+
+      setSocket(ws);
+
+      return () => ws.close();
+    };
+
+    initializeWebSocket();
+  }, [rid, idToken]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
