@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { fetchTopListings } from '~/service/fetch-listings';
+import { fetchTopListings, fetchTopListingsVerified } from '~/service/fetch-listings';
 import { ListingCard } from './ListingCard';
+import { getAuth, onAuthStateChanged, sendEmailVerification } from "firebase/auth";
+import { getApp } from "firebase/app";
 
 interface Listing {
   id: number;
@@ -18,17 +20,28 @@ interface Listing {
 
 const TopListings: React.FC = () => {
   const [listings, setListings] = useState<Listing[]>([]);
+  const auth = getAuth(getApp());  
 
   useEffect(() => {
+
     const getListings = async () => {
       try {
-        const data = await fetchTopListings();
-        console.log(data);
-        setListings(data);
+        console.log(auth.currentUser)
+        if (!auth.currentUser) {
+          const data = await fetchTopListings();
+          console.log(data);
+          setListings(data);
+
+        }else {
+          const idToken = await auth.currentUser.getIdToken();
+          const data = await fetchTopListingsVerified(idToken);
+          setListings(data);
+        }
       } catch (error) {
         console.error('Error fetching top listings:', error);
       }
     };
+
     getListings();
   }, []);
 
