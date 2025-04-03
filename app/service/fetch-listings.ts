@@ -88,3 +88,20 @@ export async function fetchTopListings() {
 
     return response.json();
 }
+
+export async function fetchTopListingsVerified(idToken: string) {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/listing/homepageVerified`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed');
+    }
+
+
+    return response.json();
+}
