@@ -168,3 +168,39 @@ export async function blockUser(uid: string, idToken: string){
         throw new Error("Block user failed");
     }
 }
+
+export async function unblockUser(uid: string, idToken: string){
+    const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/user/unblockUser/${uid}/`,
+        {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${idToken}`,
+        },
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error("Unblock user failed");
+    }
+}
+
+
+export async function fetchBlockedUsers(idToken: string){
+    const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/user/getBlockedUsers/`,
+        {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${idToken}`,
+        },
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error("Failed to fetch users");
+    }
+    return response.json();
+}
