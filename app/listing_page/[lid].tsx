@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useCallback } from "react";
-import { useParams} from "react-router";
+import { useNavigate, useParams} from "react-router";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { getAuth } from "firebase/auth";
 import { getApp } from "firebase/app";
 import { saveListing, unsaveListing } from '~/service/listing-service';
+import { createRoom } from "~/service/chat-service";
 
 
 
@@ -28,6 +29,29 @@ interface Listing {
   media?: string[];
 }
 
+const handleCreateChat = async (listingId: number, navigate: ReturnType<typeof useNavigate>) => {
+  const auth = getAuth();
+  const user = auth.currentUser;
+  if (!user) {
+    console.error("User not authenticated");
+    return;
+  }
+  const idToken = await user.getIdToken();
+
+  createRoom(idToken, listingId, user.uid)
+  .then((roomId) => {
+    if (roomId == -1) {
+      console.error("Error creating chat room - room ID -1 indicates an error");
+      return;
+    }
+    console.log("Chat room created with ID:", roomId);
+    navigate(`/inbox/${roomId}`,); // navigate to the chat room
+  })
+  .catch((error) => {
+    console.error("Error creating chat room:", error);
+  })
+}
+
 const ListingPage: React.FC = () => {
   const { lid: lidFromURL } = useParams<{ lid: string }>();
   const [listing, setListing] = useState<Listing | null>(null);
@@ -39,6 +63,8 @@ const ListingPage: React.FC = () => {
   const mediaLength = listing?.media?.length || 0;
 
   const [saveCount, setSaveCount] = useState(0);
+
+  const navigate = useNavigate();
 
 
   const handleNext = () => {
@@ -232,6 +258,13 @@ const ListingPage: React.FC = () => {
                   {listing.displayName || "Unknown Seller"}
                 </span>
               </Link>
+              {/* Chat Button */}
+              <button
+                onClick={() => handleCreateChat(listing.id, navigate)}
+                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
+              >
+                Message Seller
+              </button>
             </div>
           </div>
         </div>
