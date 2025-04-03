@@ -27,6 +27,9 @@ interface Listing {
   profilePicture: string;
   saved_by: string[];
   media?: string[];
+  category: string;
+  location: string;
+  dateListed: string;
 }
 
 const handleCreateChat = async (listingId: number, navigate: ReturnType<typeof useNavigate>) => {
@@ -223,12 +226,15 @@ const ListingPage: React.FC = () => {
 
             {/* Description */}
             <p className="text-lg text-gray-200 mb-4 whitespace-pre-wrap">{listing.description}</p>
-
-            {/* Status */}
+            
+            {/* Date Listed, Category, Location, Status */}
             <div className="text-sm text-gray-300 mb-6">
-              <span>{listing.sold ? "Status: Sold" : "Status: Available"}</span>
+              <p><strong>Date Listed:</strong> {new Date(listing.dateListed).toLocaleDateString()}</p>
+              <p><strong>Category:</strong> {listing.category}</p>
+              <p><strong>Location:</strong> {listing.location}</p>
+              <p><strong>Status:</strong> {listing.sold ? "Sold" : "Available"}</p>
               {listing.hidden && (
-                <span className="ml-4 text-red-400 font-medium">(Hidden)</span>
+                <p className="text-red-400 font-medium"><strong>Note:</strong> Hidden</p>
               )}
             </div>
 

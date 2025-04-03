@@ -170,6 +170,15 @@ const UserProfile: React.FC = () => {
       await unblockUser(blockedUid, idToken);
       setBlockedUsers((prev) => prev.filter((user) => user.uid !== blockedUid));
       alert(`User ${blockedUid} has been unblocked.`);
+      try {
+        const currentUser = auth.currentUser;
+        const idToken = await currentUser?.getIdToken();
+        if (!idToken) throw new Error("User not authenticated");
+        const data = await fetchSavedListings(idToken);
+        setSavedListings(data);
+      } catch (error) {
+        console.error("Error fetching saved listings:", error);
+      }
     } catch (error) {
       console.error("Error unblocking user:", error);
       alert("Failed to unblock user.");
