@@ -9,6 +9,8 @@ import { fetchListingByUser, fetchSavedListings } from '~/service/fetch-listings
 import { blockUser } from "~/service/user-service";
 import { useTheme } from "~/components/ThemeContext";
 import { ListingCard } from '~/components/ListingCard';
+import { unblockUser, fetchBlockedUsers } from "~/service/user-service"; 
+
 
 interface Listing {
   id: number;
@@ -41,6 +43,8 @@ const UserProfile: React.FC = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const [viewSaved, setViewSaved] = useState(false);
+  const [showBlockedPopup, setShowBlockedPopup] = useState(false);
+  const [blockedUsers, setBlockedUsers] = useState<UserProfileData[]>([]);
 
 
   useEffect(() => {
@@ -145,6 +149,33 @@ const UserProfile: React.FC = () => {
       return total + (listing.saved_by.length); // assumes `saves` is a number, defaults to 0
     }, 0);
   };
+
+  const handleViewBlockedUsers = async () => {
+    try {
+      const idToken = await firebaseUser?.getIdToken();
+      if (!idToken) throw new Error("User not authenticated");
+      const users = await fetchBlockedUsers(idToken);
+      setBlockedUsers(users);
+      setShowBlockedPopup(true);
+    } catch (error) {
+      console.error("Error fetching blocked users:", error);
+      alert("Failed to fetch blocked users.");
+    }
+  };
+
+  const handleUnblockUser = async (blockedUid: string) => {
+    try {
+      const idToken = await firebaseUser?.getIdToken();
+      if (!idToken) throw new Error("User not authenticated");
+      await unblockUser(blockedUid, idToken);
+      setBlockedUsers((prev) => prev.filter((user) => user.uid !== blockedUid));
+      alert(`User ${blockedUid} has been unblocked.`);
+    } catch (error) {
+      console.error("Error unblocking user:", error);
+      alert("Failed to unblock user.");
+    }
+  };
+
 
   if (loading) {
     return (
@@ -302,17 +333,23 @@ const UserProfile: React.FC = () => {
           )}
         </div>
 
-        {/* Edit Account Button */}
+        {/* Edit Account and View Blocked Button */}
         {firebaseUser && firebaseUser.uid === uidFromURL && (
-          <div className="mt-6 flex space-x-4">
+          <div className="mt-6 flex justify-between flex-wrap gap-2">
             <button
               onClick={() => navigate(`/u/${uidFromURL}/edit`)}
-              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded border border-white"
+              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow border border-white"
             >
               Edit Account
             </button>
+
+            <button
+              onClick={() => handleViewBlockedUsers()}
+              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow border border-white"
+            >
+              View Blocked Users
+            </button>
           </div>
-          
         )}
 
         {/* Saves on Owned Listings */}
@@ -344,6 +381,41 @@ const UserProfile: React.FC = () => {
             >
               Saved Listings
             </button>
+          </div>
+        )}
+        
+
+        {/* UnBlock popup */}
+        {showBlockedPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className={`bg-white ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"} rounded-lg shadow-lg p-6 w-96`}>
+              <h2 className="text-xl font-bold mb-4">Blocked Users</h2>
+              {blockedUsers.length > 0 ? (
+                <ul className="space-y-4">
+                  {blockedUsers.map((blockedUser) => (
+                    <li key={blockedUser.uid} className="flex justify-between items-center">
+                      <span>{blockedUser.displayName || blockedUser.email}</span>
+                      <button
+                        onClick={() => handleUnblockUser(blockedUser.uid)}
+                        className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
+                      >
+                        Unblock
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500">No blocked users found.</p>
+              )}
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => setShowBlockedPopup(false)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         )}
         
