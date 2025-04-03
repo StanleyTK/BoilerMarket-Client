@@ -84,6 +84,29 @@ export async function updateListing(
 }
 
 
+
+export async function getListing(
+  lid: number,
+){
+
+    const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/listing/getListing/${lid}`,
+        {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error("Listing not found");
+    }
+
+    return response.json();
+}
+
+
 export async function saveListing(
   lid: number,
   idToken: string
@@ -130,23 +153,3 @@ export async function unsaveListing(
     return response.json();
 }
 
-export async function getListing(
-  lid: number,
-){
-
-    const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/api/listing/getListing/${lid}`,
-        {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        }
-    );
-
-    if (!response.ok) {
-        throw new Error("Listing not found");
-    }
-
-    return response.json();
-}
