@@ -40,26 +40,22 @@ const Chat: React.FC<ChatProps> = ({ rid }) => {
   }, [auth]);
 
   useEffect(() => {
-    const initializeWebSocket = async () => {
-      if (!idToken || !rid) {
-        return
-      }
-      const ws = new WebSocket(`ws://localhost:8000/ws/chat/${rid}/?token=${idToken}`);
-  
-      ws.onopen = () => console.log("Connected to WebSocket");
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        console.log(data);
-        setMessages((prev) => [...prev, { sender: data.sender, content: data.message, timeSent: data.timeSent }]);
-      };
-      ws.onclose = () => console.log("WebSocket disconnected");
+    if (!idToken || !rid) {
+      return
+    }
+    const ws = new WebSocket(`ws://localhost:8000/ws/chat/${rid}/?token=${idToken}`);
 
-      setSocket(ws);
-
-      return () => ws.close();
+    ws.onopen = () => console.log("Connected to WebSocket");
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log(data);
+      setMessages((prev) => [...prev, { sender: data.sender, content: data.message, timeSent: data.timeSent }]);
     };
+    ws.onclose = () => console.log("WebSocket disconnected");
 
-    initializeWebSocket();
+    setSocket(ws);
+
+    return () => ws.close();
   }, [rid, idToken]);
 
   useEffect(() => {
