@@ -4,9 +4,6 @@ import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faUser, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { faUserPen } from '@fortawesome/free-solid-svg-icons/faUserPen';
-import { updateListing } from '~/service/listing-service';
-import { getAuth } from "firebase/auth";
-import { createRoom } from '~/service/chat-service';
 
 interface Listing {
   id: number;
@@ -28,29 +25,6 @@ interface ListingCardProps {
   userOwnsListing?: boolean;
 }
 
-const handleCreateChat = async (listingId: number, navigate: ReturnType<typeof useNavigate>) => {
-  const auth = getAuth();
-  const user = auth.currentUser;
-  if (!user) {
-    console.error("User not authenticated");
-    return;
-  }
-  const idToken = await user.getIdToken();
-
-  createRoom(idToken, listingId, user.uid)
-  .then((roomId) => {
-    if (roomId == -1) {
-      console.error("Error creating chat room - room ID -1 indicates an error");
-      return;
-    }
-    console.log("Chat room created with ID:", roomId);
-    navigate(`/inbox/${roomId}`,); // navigate to the chat room
-  })
-  .catch((error) => {
-    console.error("Error creating chat room:", error);
-  })
-}
-
 const renderMedia = (url: string, index: number) => {
   const isVideo = url.match(/\.(mp4|mov|webm)$/i);
   return isVideo ? (
@@ -67,7 +41,6 @@ const renderMedia = (url: string, index: number) => {
     />
   );
 };
-
 
 export const ListingCard: React.FC<ListingCardProps> = ({ listing, userOwnsListing }) => {
   const [mediaIndex, setMediaIndex] = useState(0);
@@ -131,13 +104,6 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, userOwnsListi
             SOLD
           </div>
         )}
-        ${listing.price}
-      </p>
-      <p className="mt-2 text-gray-600 text-sm">{listing.description}</p>
-    </div>
-  </div>
-)
-
 
         {/* Media Carousel */}
         <div className="relative h-48 w-full bg-black">
