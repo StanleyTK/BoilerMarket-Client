@@ -4,7 +4,7 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { ThemeProvider } from "./ThemeContext";
 import { getAuth } from 'firebase/auth';
-import { fetchAllListings, fetchListingByKeyword } from "../service/fetch-listings";
+import { fetchAllListings } from "../service/fetch-listings";
 import { getApp } from "firebase/app";
 
 interface SearchContextProps {
@@ -13,6 +13,18 @@ interface SearchContextProps {
   listings: any[];
   setListings: React.Dispatch<React.SetStateAction<any[]>>;
   handleSearch: () => Promise<void>;
+  sortBy: string;
+  setSortBy: React.Dispatch<React.SetStateAction<string>>;
+  sortDirection: "asc" | "desc";
+  setSortDirection: React.Dispatch<React.SetStateAction<"asc" | "desc">>;
+  categoryFilter: string;
+  setCategoryFilter: React.Dispatch<React.SetStateAction<string>>;
+  priceFilter: string;
+  setPriceFilter: React.Dispatch<React.SetStateAction<string>>;
+  locationFilter: string;
+  setLocationFilter: React.Dispatch<React.SetStateAction<string>>;
+  dateFilter: string;
+  setDateFilter: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const SearchContext = createContext<SearchContextProps | undefined>(undefined);
@@ -29,6 +41,12 @@ export const useSearch = () => {
 const MainLayout: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [listings, setListings] = useState<any[]>([]);
+  const [sortBy, setSortBy] = useState('dateListed');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
+  const [priceFilter, setPriceFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
 
   const handleSearch = async () => {
     const auth = getAuth(getApp());
@@ -39,11 +57,7 @@ const MainLayout: React.FC = () => {
     const idToken = await currentUser.getIdToken();
     try {
       let fetchedListings;
-      if (searchQuery === '') {
-        fetchedListings = await fetchAllListings(idToken);
-      } else {
-        fetchedListings = await fetchListingByKeyword(searchQuery, idToken);
-      }
+      fetchedListings = await fetchAllListings(idToken, sortBy, sortDirection, categoryFilter, dateFilter, priceFilter, locationFilter, searchQuery);
       setListings(fetchedListings);
       console.log('Fetched listings:', fetchedListings);
     } catch (e) {
@@ -53,7 +67,25 @@ const MainLayout: React.FC = () => {
 
   return (
     <ThemeProvider>
-      <SearchContext.Provider value={{ searchQuery, setSearchQuery, listings, setListings, handleSearch }}>
+      <SearchContext.Provider value={{
+        searchQuery,
+        setSearchQuery,
+        listings,
+        setListings,
+        handleSearch,
+        sortBy,
+        setSortBy,
+        sortDirection,
+        setSortDirection,
+        categoryFilter,
+        setCategoryFilter,
+        priceFilter,
+        setPriceFilter,
+        dateFilter,
+        setDateFilter,
+        locationFilter,
+        setLocationFilter
+      }}>
         <div className="min-h-screen bg-gray-100 dark:bg-gray-800 text-black dark:text-white">
           <Navbar />
           <Footer />
