@@ -1,4 +1,5 @@
 export interface UserProfileData {
+    profilePicture: string;
     uid: string;
     email: string;
     purdueEmail: string | null;

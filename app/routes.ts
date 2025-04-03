@@ -4,6 +4,7 @@ export default [
   layout("./components/MainLayout.tsx", [
     index("feed/feed.tsx"),
     route("login", "./login/login.tsx"),
+    route("l/:lid", "./listing_page/[lid].tsx"),
     route("register", "./register/register.tsx"),
     route("settings", "./settings/settings.tsx"),
     route("u/:uid", "./user/[uid].tsx"),

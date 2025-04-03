@@ -5,7 +5,7 @@ import type { User } from "firebase/auth";
 import { getApp } from "firebase/app";
 import { deleteUserWrapper, getUser, sendPurdueVerification, checkEmailAuth } from '~/service/user-service';
 import type { UserProfileData } from "~/service/types";
-import { fetchListingByUser } from '~/service/fetch-listings';
+import { fetchListingByUser, fetchSavedListings } from '~/service/fetch-listings';
 import { useTheme } from "~/components/ThemeContext";
 import { ListingCard } from '~/components/ListingCard';
 
@@ -20,41 +20,32 @@ interface Listing {
   uid: string;
   hidden: boolean;
   sold: boolean;
+  profilePicture: string;
+  saved_by: string[];
+  media?: string[];
 }
 
 const UserProfile: React.FC = () => {
   const auth = getAuth(getApp());
   const { uid: uidFromURL } = useParams<{ uid: string }>();
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [authChecked, setAuthChecked] = useState(false); // ✅ New
   const [user, setUser] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [purdueEmail, setPurdueEmail] = useState<string>("");
   const [userListings, setUserListings] = useState<Listing[]>([]);
+  const [savedListings, setSavedListings] = useState<Listing[]>([]);
   const [emailAuthVerified, setEmailAuthVerified] = useState<boolean>(false);
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const [viewSaved, setViewSaved] = useState(false);
 
-  const fetchUserListings = useCallback(async () => {
-      if (!firebaseUser) return;
-      setLoading(true);
-      try {
-        const idToken = await firebaseUser.getIdToken();
-        const data = await fetchListingByUser(String(firebaseUser.uid), idToken);
-        setUserListings(data);
-      } catch (error) {
-        setError((error as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    }, [firebaseUser]);
 
-  // Listen for Firebase authentication state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setFirebaseUser(user);
-      }
+      setFirebaseUser(user);
+      setAuthChecked(true); // ✅ Set when auth is resolved
     });
     return () => unsubscribe();
   }, [auth]);
@@ -66,6 +57,9 @@ const UserProfile: React.FC = () => {
           const idToken = await firebaseUser.getIdToken();
           await checkEmailAuth(idToken);
           setEmailAuthVerified(true);
+
+          console.log(idToken);
+          
         } catch (error) {
           setEmailAuthVerified(false);
         }
@@ -75,49 +69,56 @@ const UserProfile: React.FC = () => {
   }, [firebaseUser]);
 
   useEffect(() => {
-  if (!uidFromURL) {
-    setError("Invalid user ID.");
-    setLoading(false);
-    return;
-  }
+    if (!uidFromURL || !authChecked) return;
 
-  const fetchUserData = async () => {
-    setLoading(true);
-    try {
-      const data = await getUser(uidFromURL);
-      if (!data || !data.email) {
-        setError("User not found");
-      } else {
-        setUser(data);
-        setPurdueEmail(data.purdueEmail || "");
+    const fetchUserData = async () => {
+      setLoading(true);
+      try {
+        const data = await getUser(uidFromURL);
+        if (!data || !data.email) {
+          setError("User not found");
+        } else {
+          setUser(data);
+          setPurdueEmail(data.purdueEmail || "");
+        }
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  fetchUserData();
-
-  const getUserListings = async () => {
-    try {
-      const currentUser = auth.currentUser;
-      if (!currentUser) {
-        throw new Error("User not authenticated");
+    const getUserListings = async () => {
+      try {
+        const currentUser = auth.currentUser;
+        const idToken = await currentUser?.getIdToken();
+        if (!idToken) throw new Error("User not authenticated");
+        const data = await fetchListingByUser(uidFromURL, idToken);
+        setUserListings(data);
+      } catch (error) {
+        console.error("Error fetching user listings:", error);
       }
-      const idToken = await currentUser.getIdToken();
-      const data = await fetchListingByUser(String(uidFromURL), idToken);
-      setUserListings(data);
-    } catch (error) {
-      console.error("Error fetching user listings:", error);
-    }
-  };
-  getUserListings();
-}, [uidFromURL]);
+    };
 
+    const getSavedListings = async () => {
+      try {
+        const currentUser = auth.currentUser;
+        const idToken = await currentUser?.getIdToken();
+        if (!idToken) throw new Error("User not authenticated");
+        const data = await fetchSavedListings(idToken);
+        setSavedListings(data);
+      } catch (error) {
+        console.error("Error fetching saved listings:", error);
+      }
+    };
 
+    getSavedListings();
+    fetchUserData();
+    getUserListings();
+  }, [uidFromURL, authChecked]);
 
+  
+  
   const handlePurdueEmailVerification = async () => {
     if (!firebaseUser) {
       alert("You must be logged in to verify your Purdue email.");
@@ -138,6 +139,12 @@ const UserProfile: React.FC = () => {
       });
   };
 
+  const getTotalSaves = (): number => {
+    return userListings.reduce((total, listing) => {
+      return total + (listing.saved_by.length); // assumes `saves` is a number, defaults to 0
+    }, 0);
+  };
+
   if (loading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"}`}>
@@ -145,7 +152,6 @@ const UserProfile: React.FC = () => {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"}`}>
@@ -168,13 +174,27 @@ const UserProfile: React.FC = () => {
           </button>
         )}
 
-        {/* Avatar and Display Name */}
         <div className="flex flex-col items-center">
-          <div className="w-24 h-24 bg-blue-500 text-white text-3xl font-bold rounded-full flex items-center justify-center shadow-lg">
-            {user?.displayName?.charAt(0).toUpperCase()}
+          <div className="w-24 h-24 rounded-full overflow-hidden shadow-lg items-center">
+            {user?.profilePicture ? (
+              <img
+                src={`${user.profilePicture}?t=${new Date().getTime()}`}
+                alt="User Avatar"
+                className="w-full h-full object-cover"
+              />
+
+
+            ) : (
+              <div className="w-full h-full bg-blue-500 text-white text-3xl font-bold flex items-center justify-center">
+                {user?.displayName?.charAt(0).toUpperCase()}
+              </div>
+            )}
+
           </div>
           <h1 className="text-2xl font-bold mt-4">{user?.displayName}</h1>
         </div>
+
+
 
         {/* User Info Section */}
         <div className="mt-6 space-y-4">
@@ -251,32 +271,69 @@ const UserProfile: React.FC = () => {
               Edit Account
             </button>
           </div>
+          
         )}
 
+        {/* Saves on Owned Listings */}
+        {firebaseUser && firebaseUser.uid === uidFromURL && (
+          <div className="mt-4 flex items-center">
+            <span className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"} w-1/3 font-semibold`}>Saves on Owned Listings:</span>
+            <span className="w-1/2">{getTotalSaves()}</span>
+          </div>
+        )}
       </div>
+      
+      
       <div className="mt-12"></div>
-      {emailAuthVerified ? (
-        <div className="user-listing-container">
-          {userListings.length > 0 ? (
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
-              {userListings.map((listing, index) => (
-                <ListingCard
-                  key={index}
-                  listing={listing}
-                  userOwnsListing={firebaseUser?.uid === uidFromURL}
-                />
-              ))}
-            </div>
-          ) : (
-            <p>No listings found. </p>
-          )}
+      
+
+      {/* Listings Toggle Button */}
+
+      {firebaseUser && firebaseUser.uid === uidFromURL && emailAuthVerified && (
+          <div className="flex space-x-4">
+            <button
+              onClick={() => setViewSaved(false)}
+              className={`py-2 px-4 rounded ${!viewSaved ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+            >
+              Your Listings
+            </button>
+            <button
+              onClick={() => setViewSaved(true)}
+              className={`py-2 px-4 rounded ${viewSaved ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+            >
+              Saved Listings
+            </button>
+          </div>
+        )}
+        
+        {emailAuthVerified ? (
+  <>
+    {/* Listings Section */}
+    <div className="user-listing-container mt-6">
+      {(viewSaved ? savedListings : userListings).length > 0 ? (
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
+          {(viewSaved ? savedListings : userListings).map((listing, index) => (
+            <ListingCard
+              key={index}
+              listing={listing}
+              userOwnsListing={!viewSaved && firebaseUser?.uid === uidFromURL}
+            />
+          ))}
         </div>
       ) : (
+        <p className="text-center mt-4 text-gray-500">
+          {viewSaved ? "No saved listings." : "No listings found."}
+        </p>
+      )}
+        </div>
+        </>
+      ) : (
         firebaseUser?.uid === uidFromURL && (
-          <p>You cannot create any listings until you verify your email.</p>
+          <p className="text-center mt-6 text-red-500">
+            You cannot create any listings until you verify your email.
+          </p>
         )
       )}
-
 
     </div>
   );

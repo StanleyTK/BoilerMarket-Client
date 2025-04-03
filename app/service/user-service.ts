@@ -37,19 +37,30 @@ async function deleteUserFromDatabase(uid: string, idToken: string) {
 }
 export async function updateUser(
     idToken: string,
-    updateData: { displayName: string; bio: string }
+    updateData: {
+      displayName: string;
+      bio: string;
+      profilePicture?: File | null;
+      removeProfilePicture?: boolean;
+    }
   ) {
-    const response = await fetch(
-      `${import.meta.env.VITE_BASE_URL}/api/user/update/`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify(updateData),
-      }
-    );
+    const formData = new FormData();
+    formData.append("displayName", updateData.displayName);
+    formData.append("bio", updateData.bio);
+    if (updateData.profilePicture) {
+      formData.append("profilePicture", updateData.profilePicture);
+    }
+    if (updateData.removeProfilePicture) {
+      formData.append("removeProfilePicture", "true");
+    }
+  
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/user/update/`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: formData,
+    });
   
     if (!response.ok) {
       throw new Error("Failed to update user");
@@ -57,6 +68,7 @@ export async function updateUser(
   
     return response.json();
   }
+  
 
 
 export async function getUser(uid: string): Promise<UserProfileData> {
