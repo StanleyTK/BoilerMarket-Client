@@ -63,3 +63,18 @@ export async function fetchTopListings() {
     return response.json();
 }
 
+export async function fetchSavedListings(idToken: string) {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/listing/getSaved/`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch saved listings');
+    }
+
+    return response.json();
+}
