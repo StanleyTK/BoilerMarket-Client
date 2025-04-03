@@ -6,6 +6,7 @@ import { getApp } from "firebase/app";
 import { deleteUserWrapper, getUser, sendPurdueVerification, checkEmailAuth } from '~/service/user-service';
 import type { UserProfileData } from "~/service/types";
 import { fetchListingByUser, fetchSavedListings } from '~/service/fetch-listings';
+import { blockUser } from "~/service/user-service";
 import { useTheme } from "~/components/ThemeContext";
 import { ListingCard } from '~/components/ListingCard';
 
@@ -163,6 +164,46 @@ const UserProfile: React.FC = () => {
   return (
     <div className={`min-h-screen ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"} p-6 flex flex-col items-center relative`}>
       <div className={`w-full max-w-2xl ${theme === "dark" ? "bg-gray-700" : "bg-gray-300"} shadow-lg rounded-xl p-8 relative`}>
+
+      {/* Block User Button: Only visible if this is not your profile and you are logged in */}
+      {firebaseUser && firebaseUser.uid !== uidFromURL && (
+        <div className="flex justify-end mt-1">
+          <button
+            onClick={async () => {
+              const confirmBlock = confirm("Are you sure you want to block this user?");
+              if (confirmBlock && firebaseUser) {
+                try {
+                  const idToken = await firebaseUser.getIdToken();
+                    await blockUser(uidFromURL!, idToken); 
+                  alert(`User ${uidFromURL} has been blocked.`);
+                  navigate("/");
+                } catch (err) {
+                  console.error(err);
+                  alert("Failed to block user: " + (err as Error).message);
+                }
+              }
+            }}
+            className="flex items-center gap-2 bg-red-100 text-red-700 hover:bg-red-200 transition-colors px-4 py-2 rounded-lg shadow-sm border border-red-300"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M18.364 5.636A9 9 0 115.636 18.364 9 9 0 0118.364 5.636zM15 9l-6 6"
+              />
+            </svg>
+            Block User
+          </button>
+        </div>
+      )}
+        
         {/* Plus Button: Only visible if this is your profile and email auth is verified */}
         {firebaseUser && firebaseUser.uid === uidFromURL && emailAuthVerified && (
           <button
