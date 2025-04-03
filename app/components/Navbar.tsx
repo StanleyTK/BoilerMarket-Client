@@ -35,6 +35,15 @@ const Navbar: React.FC = () => {
     }
   };
 
+  const handleInboxClick = () => {
+    setMenuOpen(false);
+    if (isLoggedIn) {
+      navigate("/inbox");
+    } else {
+      navigate("/login");
+    }
+  };
+
   const handleSearchSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (location.pathname !== "/search") {
@@ -90,6 +99,9 @@ const Navbar: React.FC = () => {
         <div className="flex items-center space-x-4">
           <button onClick={handleProfileClick} className="font-semibold hover:underline">
             View My Profile
+          </button>
+          <button onClick={handleInboxClick} className="font-semibold hover:underline">
+            Inbox
           </button>
           <div className="cursor-pointer p-2" onClick={toggleMenu}>
             <svg
