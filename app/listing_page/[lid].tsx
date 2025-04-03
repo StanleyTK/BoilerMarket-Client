@@ -6,6 +6,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { getListing } from "~/service/listing-service";
 import { Link } from 'react-router-dom';
+import { getAuth } from "firebase/auth";
+import { getApp } from "firebase/app";
+import { saveListing, unsaveListing } from '~/service/listing-service';
+
 
 
 interface Listing {
@@ -20,6 +24,7 @@ interface Listing {
   hidden: boolean;
   sold: boolean;
   profilePicture: string;
+  saved_by: string[];
   media?: string[];
 }
 
@@ -31,36 +36,67 @@ const ListingPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [mediaIndex, setMediaIndex] = useState(0);
-const mediaLength = listing?.media?.length || 0;
+  const mediaLength = listing?.media?.length || 0;
 
-const handleNext = () => {
-  if (mediaLength > 0) {
-    setMediaIndex((prev) => (prev + 1) % mediaLength);
-  }
-};
+  const [saveCount, setSaveCount] = useState(0);
 
-const handlePrev = () => {
-  if (mediaLength > 0) {
-    setMediaIndex((prev) => (prev - 1 + mediaLength) % mediaLength);
-  }
-};
 
-const renderMedia = (url: string, index: number) => {
-  const isVideo = url.match(/\.(mp4|mov|webm)$/i);
-  return isVideo ? (
-    <video key={index} controls className="object-cover h-full w-full rounded-t-xl">
-      <source src={url} type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
-  ) : (
-    <img
-      key={index}
-      src={url}
-      alt={`listing media ${index}`}
-      className="object-cover h-full w-full rounded-t-xl"
-    />
-  );
-};
+  const handleNext = () => {
+    if (mediaLength > 0) {
+      setMediaIndex((prev) => (prev + 1) % mediaLength);
+    }
+  };
+
+  const handlePrev = () => {
+    if (mediaLength > 0) {
+      setMediaIndex((prev) => (prev - 1 + mediaLength) % mediaLength);
+    }
+  };
+
+  const renderMedia = (url: string, index: number) => {
+    const isVideo = url.match(/\.(mp4|mov|webm)$/i);
+    return isVideo ? (
+      <video key={index} controls className="object-cover h-full w-full rounded-t-xl">
+        <source src={url} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    ) : (
+      <img
+        key={index}
+        src={url}
+        alt={`listing media ${index}`}
+        className="object-cover h-full w-full rounded-t-xl"
+      />
+    );
+  };
+
+  const auth = getAuth(getApp());
+  const currentUser = auth.currentUser;
+  const [isSaved, setIsSaved] = useState(false);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser) {
+      alert("You need to be logged in to save listings.");
+      return;
+    }
+    try {
+      const idToken = await currentUser.getIdToken();
+      if (!idToken) throw new Error("User not authenticated");
+  
+      if (isSaved) {
+        await unsaveListing(Number(lidFromURL), idToken);
+        setIsSaved(false);
+        setSaveCount((prev) => Math.max(prev - 1, 0));
+      } else {
+        await saveListing(Number(lidFromURL), idToken);
+        setIsSaved(true);
+        setSaveCount((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.error("Error saving/unsaving listing:", error);
+    }
+  };
 
 
   useEffect(() => {  
@@ -74,6 +110,11 @@ const renderMedia = (url: string, index: number) => {
             setError("Listing not found");
           } else {
             setListing(data);
+            setSaveCount(data.saved_by.length);
+            if (currentUser && data.saved_by.includes(currentUser.uid)) {
+              setIsSaved(true);
+              console.log("Listing is saved by the current user.");
+            }
             console.log(data)
           }
         } catch (err) {
@@ -128,6 +169,19 @@ const renderMedia = (url: string, index: number) => {
         {/* Info Box */}
         <div className="w-full lg:w-1/2 flex">
           <div className="bg-gray-700 text-white rounded-xl p-6 shadow-sm w-full flex flex-col justify-between">
+
+            {/* Save Button */}
+            <button
+              onClick={handleSave}
+              className="top-4 right-4 bg-white text-gray-800 px-3 py-1 rounded-md hover:bg-gray-100 transition z-10"
+              title={isSaved ? "Unsave Listing" : "Save Listing"}
+            >
+              {isSaved ? "★ Saved" : "☆ Save"}
+            </button>
+            <p className="text-sm text-gray-300 mt-1">
+              {saveCount} save{saveCount !== 1 ? "s" : ""}
+            </p>
+
             {/* Title */}
             <h1 className="text-3xl font-bold mb-3">{listing.title}</h1>
 
