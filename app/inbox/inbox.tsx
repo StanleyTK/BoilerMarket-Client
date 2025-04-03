@@ -5,7 +5,6 @@ import type { InboxRoomData } from '../service/types';
 import { getRooms } from '../service/chat-service';
 import { getApp } from 'firebase/app';
 import Chat from '~/components/Chat';
-import { getUser } from '~/service/user-service';
 
 const Inbox: React.FC = () => {
   const auth = getAuth(getApp());
@@ -75,7 +74,7 @@ const Inbox: React.FC = () => {
         {selectedRid === -1 ? (
           <p>Select a room to start chatting.</p>
         ) : (
-          <Chat rid={selectedRid} />
+          <Chat key={selectedRid} rid={selectedRid} />
         )}
       </div>
     </div>
