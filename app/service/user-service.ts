@@ -150,3 +150,21 @@ export async function checkEmailAuth(idToken: string) {
 
     return response.json();
 }
+
+
+export async function blockUser(uid: string, idToken: string){
+    const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/user/blockUser/${uid}/`,
+        {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${idToken}`,
+        },
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error("Block user failed");
+    }
+}
