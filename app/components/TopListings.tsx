@@ -13,6 +13,7 @@ interface Listing {
   uid: string;
   hidden: boolean;
   sold: boolean;
+  profilePicture: string;
 }
 
 const TopListings: React.FC = () => {
@@ -22,6 +23,7 @@ const TopListings: React.FC = () => {
     const getListings = async () => {
       try {
         const data = await fetchTopListings();
+        console.log(data);
         setListings(data);
       } catch (error) {
         console.error('Error fetching top listings:', error);

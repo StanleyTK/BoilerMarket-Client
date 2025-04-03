@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, Outlet, useLocation } from "react-router";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getAuth, signOut } from "firebase/auth";
@@ -66,7 +66,7 @@ const Navbar: React.FC = () => {
           </div>
         </div>
 
-    
+
 
         {/* Center Section: Search Bar */}
         <form onSubmit={handleSearchSubmit} className="relative w-1/3">
@@ -98,7 +98,7 @@ const Navbar: React.FC = () => {
         {/* Right Section: Profile & Dropdown Menu */}
         <div className="flex items-center space-x-4">
           <button onClick={handleProfileClick} className="font-semibold hover:underline">
-             View My Profile
+            View My Profile
           </button>
           <button onClick={handleInboxClick} className="font-semibold hover:underline">
             Inbox
