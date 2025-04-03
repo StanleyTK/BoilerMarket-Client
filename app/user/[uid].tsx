@@ -5,7 +5,7 @@ import type { User } from "firebase/auth";
 import { getApp } from "firebase/app";
 import { deleteUserWrapper, getUser, sendPurdueVerification, checkEmailAuth } from '~/service/user-service';
 import type { UserProfileData } from "~/service/types";
-import { fetchListingByUser } from '~/service/fetch-listings';
+import { fetchListingByUser, fetchSavedListings } from '~/service/fetch-listings';
 import { useTheme } from "~/components/ThemeContext";
 import { ListingCard } from '~/components/ListingCard';
 
@@ -21,6 +21,7 @@ interface Listing {
   hidden: boolean;
   sold: boolean;
   profilePicture: string;
+  saved_by: string[];
   media?: string[];
 }
 
@@ -34,9 +35,12 @@ const UserProfile: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [purdueEmail, setPurdueEmail] = useState<string>("");
   const [userListings, setUserListings] = useState<Listing[]>([]);
+  const [savedListings, setSavedListings] = useState<Listing[]>([]);
   const [emailAuthVerified, setEmailAuthVerified] = useState<boolean>(false);
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const [viewSaved, setViewSaved] = useState(false);
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -96,10 +100,25 @@ const UserProfile: React.FC = () => {
       }
     };
 
+    const getSavedListings = async () => {
+      try {
+        const currentUser = auth.currentUser;
+        const idToken = await currentUser?.getIdToken();
+        if (!idToken) throw new Error("User not authenticated");
+        const data = await fetchSavedListings(idToken);
+        setSavedListings(data);
+      } catch (error) {
+        console.error("Error fetching saved listings:", error);
+      }
+    };
+
+    getSavedListings();
     fetchUserData();
     getUserListings();
   }, [uidFromURL, authChecked]);
 
+  
+  
   const handlePurdueEmailVerification = async () => {
     if (!firebaseUser) {
       alert("You must be logged in to verify your Purdue email.");
@@ -118,6 +137,12 @@ const UserProfile: React.FC = () => {
         console.error("Error sending verification email:", err);
         alert(err.message);
       });
+  };
+
+  const getTotalSaves = (): number => {
+    return userListings.reduce((total, listing) => {
+      return total + (listing.saved_by.length); // assumes `saves` is a number, defaults to 0
+    }, 0);
   };
 
   if (loading) {
@@ -246,32 +271,69 @@ const UserProfile: React.FC = () => {
               Edit Account
             </button>
           </div>
+          
         )}
 
+        {/* Saves on Owned Listings */}
+        {firebaseUser && firebaseUser.uid === uidFromURL && (
+          <div className="mt-4 flex items-center">
+            <span className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"} w-1/3 font-semibold`}>Saves on Owned Listings:</span>
+            <span className="w-1/2">{getTotalSaves()}</span>
+          </div>
+        )}
       </div>
+      
+      
       <div className="mt-12"></div>
-      {emailAuthVerified ? (
-        <div className="user-listing-container">
-          {userListings.length > 0 ? (
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
-              {userListings.map((listing, index) => (
-                <ListingCard
-                  key={index}
-                  listing={listing}
-                  userOwnsListing={firebaseUser?.uid === uidFromURL}
-                />
-              ))}
-            </div>
-          ) : (
-            <p>No listings found. </p>
-          )}
+      
+
+      {/* Listings Toggle Button */}
+
+      {firebaseUser && firebaseUser.uid === uidFromURL && emailAuthVerified && (
+          <div className="flex space-x-4">
+            <button
+              onClick={() => setViewSaved(false)}
+              className={`py-2 px-4 rounded ${!viewSaved ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+            >
+              Your Listings
+            </button>
+            <button
+              onClick={() => setViewSaved(true)}
+              className={`py-2 px-4 rounded ${viewSaved ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+            >
+              Saved Listings
+            </button>
+          </div>
+        )}
+        
+        {emailAuthVerified ? (
+  <>
+    {/* Listings Section */}
+    <div className="user-listing-container mt-6">
+      {(viewSaved ? savedListings : userListings).length > 0 ? (
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
+          {(viewSaved ? savedListings : userListings).map((listing, index) => (
+            <ListingCard
+              key={index}
+              listing={listing}
+              userOwnsListing={!viewSaved && firebaseUser?.uid === uidFromURL}
+            />
+          ))}
         </div>
       ) : (
+        <p className="text-center mt-4 text-gray-500">
+          {viewSaved ? "No saved listings." : "No listings found."}
+        </p>
+      )}
+        </div>
+        </>
+      ) : (
         firebaseUser?.uid === uidFromURL && (
-          <p>You cannot create any listings until you verify your email.</p>
+          <p className="text-center mt-6 text-red-500">
+            You cannot create any listings until you verify your email.
+          </p>
         )
       )}
-
 
     </div>
   );
