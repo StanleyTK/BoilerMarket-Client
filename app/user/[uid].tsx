@@ -44,6 +44,8 @@ const UserProfile: React.FC = () => {
   const [viewSaved, setViewSaved] = useState(false);
   const [showBlockedPopup, setShowBlockedPopup] = useState(false);
   const [blockedUsers, setBlockedUsers] = useState<UserProfileData[]>([]);
+  const [blocked, setBlocked] = useState(false);
+
 
   // Listen for authentication state changes.
   useEffect(() => {
@@ -121,6 +123,20 @@ const UserProfile: React.FC = () => {
       }
     };
 
+    const checkBlocked = async () => {
+      try {
+        const idToken = await firebaseUser?.getIdToken();
+        if (!idToken) throw new Error("User not authenticated");
+        const users = await fetchBlockedUsers(idToken);
+        const isBlocked = users?.some((user: { uid: string | undefined; }) => user.uid === uidFromURL);
+        console.log("Blocked users:", users);
+        setBlocked(isBlocked);
+      } catch (error) {
+        console.error("Error fetching blocked users:", error);
+      }
+    };
+    
+    checkBlocked();
     getSavedListings();
     fetchUserData();
     getUserListings();
@@ -208,14 +224,19 @@ const UserProfile: React.FC = () => {
 
         {/* Block User Button: Only visible if this is not your profile and you are logged in */}
         {firebaseUser && firebaseUser.uid !== uidFromURL && (
-          <div className="flex justify-end mt-1">
+        <div className="flex justify-end mt-1">
+          {blocked ? (
+            <span className="px-4 py-2 rounded-lg bg-gray-100 text-gray-500 border border-gray-300 shadow-sm">
+              Blocked
+            </span>
+          ) : (
             <button
               onClick={async () => {
                 const confirmBlock = confirm("Are you sure you want to block this user?");
                 if (confirmBlock && firebaseUser) {
                   try {
                     const idToken = await firebaseUser.getIdToken();
-                    await blockUser(uidFromURL!, idToken); 
+                    await blockUser(uidFromURL!, idToken);
                     alert(`User ${uidFromURL} has been blocked.`);
                     navigate("/");
                   } catch (err) {
@@ -242,8 +263,9 @@ const UserProfile: React.FC = () => {
               </svg>
               Block User
             </button>
-          </div>
-        )}
+          )}
+        </div>
+      )}
 
         {/* Plus Button: Only visible if this is your profile and email auth is verified */}
         {firebaseUser && firebaseUser.uid === uidFromURL && emailAuthVerified && (
@@ -420,34 +442,34 @@ const UserProfile: React.FC = () => {
         </div>
       )}
         
-      {emailAuthVerified ? (
-        <>
-          {/* Listings Section */}
-          <div className="user-listing-container mt-6">
-            {(viewSaved ? savedListings : userListings).length > 0 ? (
-              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
-                {(viewSaved ? savedListings : userListings).map((listing, index) => (
-                  <ListingCard
-                    key={index}
-                    listing={listing}
-                    userOwnsListing={!viewSaved && firebaseUser?.uid === uidFromURL}
-                  />
-                ))}
-              </div>
-            ) : (
-              <p className="text-center mt-4 text-gray-500">
-                {viewSaved ? "No saved listings." : "No listings found."}
-              </p>
-            )}
-          </div>
-        </>
-      ) : (
-        firebaseUser?.uid === uidFromURL && (
+        {emailAuthVerified && !blocked ? (
+          <>
+            {/* Listings Section */}
+            <div className="user-listing-container mt-6">
+              {(viewSaved ? savedListings : userListings).length > 0 ? (
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
+                  {(viewSaved ? savedListings : userListings).map((listing, index) => (
+                    <ListingCard
+                      key={index}
+                      listing={listing}
+                      userOwnsListing={!viewSaved && firebaseUser?.uid === uidFromURL}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center mt-4 text-gray-500">
+                  {viewSaved ? "No saved listings." : "No listings found."}
+                </p>
+              )}
+            </div>
+          </>
+        ) : (
           <p className="text-center mt-6 text-red-500">
-            You cannot create any listings until you verify your email.
+            {blocked
+              ? "You cannot view listings due to blocked user."
+              : "You cannot view listings until you verify your email."}
           </p>
-        )
-      )}
+        )}
     </div>
   );
 };

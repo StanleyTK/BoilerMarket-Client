@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams} from "react-router";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
@@ -9,6 +10,8 @@ import { getAuth } from "firebase/auth";
 import { getApp } from "firebase/app";
 import { saveListing, unsaveListing } from '~/service/listing-service';
 import { createRoom } from "~/service/chat-service";
+
+
 
 interface Listing {
   id: number;
@@ -32,36 +35,40 @@ interface Listing {
 const handleCreateChat = async (listingId: number, navigate: ReturnType<typeof useNavigate>) => {
   const auth = getAuth();
   const user = auth.currentUser;
-  // If user is not logged in, redirect them to /login
   if (!user) {
-    navigate("/login");
+    console.error("User not authenticated");
     return;
   }
   const idToken = await user.getIdToken();
 
   createRoom(idToken, listingId, user.uid)
-    .then((roomId) => {
-      if (roomId === -1) {
-        console.error("Error creating chat room - room ID -1 indicates an error");
-        return;
-      }
-      console.log("Chat room created with ID:", roomId);
-      navigate(`/inbox/${roomId}`); // navigate to the chat room
-    })
-    .catch((error) => {
-      console.error("Error creating chat room:", error);
-    });
-};
+  .then((roomId) => {
+    if (roomId == -1) {
+      console.error("Error creating chat room - room ID -1 indicates an error");
+      return;
+    }
+    console.log("Chat room created with ID:", roomId);
+    navigate(`/inbox/${roomId}`,); // navigate to the chat room
+  })
+  .catch((error) => {
+    console.error("Error creating chat room:", error);
+  })
+}
 
 const ListingPage: React.FC = () => {
   const { lid: lidFromURL } = useParams<{ lid: string }>();
   const [listing, setListing] = useState<Listing | null>(null);
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [mediaIndex, setMediaIndex] = useState(0);
   const mediaLength = listing?.media?.length || 0;
+
   const [saveCount, setSaveCount] = useState(0);
+
   const navigate = useNavigate();
+
 
   const handleNext = () => {
     if (mediaLength > 0) {
@@ -105,7 +112,7 @@ const ListingPage: React.FC = () => {
     try {
       const idToken = await currentUser.getIdToken();
       if (!idToken) throw new Error("User not authenticated");
-
+  
       if (isSaved) {
         await unsaveListing(Number(lidFromURL), idToken);
         setIsSaved(false);
@@ -120,33 +127,34 @@ const ListingPage: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchListingData = async () => {
-      setLoading(true);
-      if (!lidFromURL) return;
 
-      try {
-        const data = await getListing(Number(lidFromURL));
-        if (!data) {
-          setError("Listing not found");
-        } else {
-          setListing(data);
-          setSaveCount(data.saved_by.length);
-          if (currentUser && data.saved_by.includes(currentUser.uid)) {
-            setIsSaved(true);
-            console.log("Listing is saved by the current user.");
+  useEffect(() => {  
+      const fetchListingData = async () => {
+        setLoading(true);
+        if (!lidFromURL) return;
+
+        try {
+          const data = await getListing(Number(lidFromURL));
+          if (!data) {
+            setError("Listing not found");
+          } else {
+            setListing(data);
+            setSaveCount(data.saved_by.length);
+            if (currentUser && data.saved_by.includes(currentUser.uid)) {
+              setIsSaved(true);
+              console.log("Listing is saved by the current user.");
+            }
+            console.log(data)
           }
-          console.log(data);
+        } catch (err) {
+          setError((err as Error).message);
+        } finally {
+          setLoading(false);
         }
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchListingData();
-  }, [lidFromURL]);
+      };
+  
+      fetchListingData();
+    }, [lidFromURL]);
 
   if (loading) return <div className="p-4 text-xl">Loading...</div>;
   if (error) return <div className="p-4 text-red-500 text-xl">{error}</div>;
@@ -186,10 +194,11 @@ const ListingPage: React.FC = () => {
             )}
           </div>
         </div>
-
+  
         {/* Info Box */}
         <div className="w-full lg:w-1/2 flex">
           <div className="bg-gray-700 text-white rounded-xl p-6 shadow-sm w-full flex flex-col justify-between">
+
             {/* Save Button */}
             <button
               onClick={handleSave}
@@ -268,6 +277,6 @@ const ListingPage: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 export default ListingPage;
