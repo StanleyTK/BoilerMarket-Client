@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { getAuth, onAuthStateChanged, sendEmailVerification } from "firebase/auth";
 import type { User } from "firebase/auth";
@@ -10,7 +10,6 @@ import { blockUser } from "~/service/user-service";
 import { useTheme } from "~/components/ThemeContext";
 import { ListingCard } from '~/components/ListingCard';
 import { unblockUser, fetchBlockedUsers } from "~/service/user-service"; 
-
 
 interface Listing {
   id: number;
@@ -32,7 +31,7 @@ const UserProfile: React.FC = () => {
   const auth = getAuth(getApp());
   const { uid: uidFromURL } = useParams<{ uid: string }>();
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
-  const [authChecked, setAuthChecked] = useState(false); // ✅ New
+  const [authChecked, setAuthChecked] = useState(false);
   const [user, setUser] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,14 +45,21 @@ const UserProfile: React.FC = () => {
   const [showBlockedPopup, setShowBlockedPopup] = useState(false);
   const [blockedUsers, setBlockedUsers] = useState<UserProfileData[]>([]);
 
-
+  // Listen for authentication state changes.
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setFirebaseUser(user);
-      setAuthChecked(true); // ✅ Set when auth is resolved
+      setAuthChecked(true);
     });
     return () => unsubscribe();
   }, [auth]);
+
+  // Redirect to /login if authentication is checked and no user is found.
+  useEffect(() => {
+    if (authChecked && !firebaseUser) {
+      navigate("/login");
+    }
+  }, [authChecked, firebaseUser, navigate]);
 
   useEffect(() => {
     const verifyEmailAuth = async () => {
@@ -62,9 +68,7 @@ const UserProfile: React.FC = () => {
           const idToken = await firebaseUser.getIdToken();
           await checkEmailAuth(idToken);
           setEmailAuthVerified(true);
-
           console.log(idToken);
-          
         } catch (error) {
           setEmailAuthVerified(false);
         }
@@ -122,8 +126,6 @@ const UserProfile: React.FC = () => {
     getUserListings();
   }, [uidFromURL, authChecked]);
 
-  
-  
   const handlePurdueEmailVerification = async () => {
     if (!firebaseUser) {
       alert("You must be logged in to verify your Purdue email.");
@@ -146,7 +148,7 @@ const UserProfile: React.FC = () => {
 
   const getTotalSaves = (): number => {
     return userListings.reduce((total, listing) => {
-      return total + (listing.saved_by.length); // assumes `saves` is a number, defaults to 0
+      return total + listing.saved_by.length;
     }, 0);
   };
 
@@ -185,7 +187,6 @@ const UserProfile: React.FC = () => {
     }
   };
 
-
   if (loading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"}`}>
@@ -205,45 +206,45 @@ const UserProfile: React.FC = () => {
     <div className={`min-h-screen ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"} p-6 flex flex-col items-center relative`}>
       <div className={`w-full max-w-2xl ${theme === "dark" ? "bg-gray-700" : "bg-gray-300"} shadow-lg rounded-xl p-8 relative`}>
 
-      {/* Block User Button: Only visible if this is not your profile and you are logged in */}
-      {firebaseUser && firebaseUser.uid !== uidFromURL && (
-        <div className="flex justify-end mt-1">
-          <button
-            onClick={async () => {
-              const confirmBlock = confirm("Are you sure you want to block this user?");
-              if (confirmBlock && firebaseUser) {
-                try {
-                  const idToken = await firebaseUser.getIdToken();
+        {/* Block User Button: Only visible if this is not your profile and you are logged in */}
+        {firebaseUser && firebaseUser.uid !== uidFromURL && (
+          <div className="flex justify-end mt-1">
+            <button
+              onClick={async () => {
+                const confirmBlock = confirm("Are you sure you want to block this user?");
+                if (confirmBlock && firebaseUser) {
+                  try {
+                    const idToken = await firebaseUser.getIdToken();
                     await blockUser(uidFromURL!, idToken); 
-                  alert(`User ${uidFromURL} has been blocked.`);
-                  navigate("/");
-                } catch (err) {
-                  console.error(err);
-                  alert("Failed to block user: " + (err as Error).message);
+                    alert(`User ${uidFromURL} has been blocked.`);
+                    navigate("/");
+                  } catch (err) {
+                    console.error(err);
+                    alert("Failed to block user: " + (err as Error).message);
+                  }
                 }
-              }
-            }}
-            className="flex items-center gap-2 bg-red-100 text-red-700 hover:bg-red-200 transition-colors px-4 py-2 rounded-lg shadow-sm border border-red-300"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
+              }}
+              className="flex items-center gap-2 bg-red-100 text-red-700 hover:bg-red-200 transition-colors px-4 py-2 rounded-lg shadow-sm border border-red-300"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M18.364 5.636A9 9 0 115.636 18.364 9 9 0 0118.364 5.636zM15 9l-6 6"
-              />
-            </svg>
-            Block User
-          </button>
-        </div>
-      )}
-        
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M18.364 5.636A9 9 0 115.636 18.364 9 9 0 0118.364 5.636zM15 9l-6 6"
+                />
+              </svg>
+              Block User
+            </button>
+          </div>
+        )}
+
         {/* Plus Button: Only visible if this is your profile and email auth is verified */}
         {firebaseUser && firebaseUser.uid === uidFromURL && emailAuthVerified && (
           <button
@@ -263,19 +264,14 @@ const UserProfile: React.FC = () => {
                 alt="User Avatar"
                 className="w-full h-full object-cover"
               />
-
-
             ) : (
               <div className="w-full h-full bg-blue-500 text-white text-3xl font-bold flex items-center justify-center">
                 {user?.displayName?.charAt(0).toUpperCase()}
               </div>
             )}
-
           </div>
           <h1 className="text-2xl font-bold mt-4">{user?.displayName}</h1>
         </div>
-
-
 
         {/* User Info Section */}
         <div className="mt-6 space-y-4">
@@ -370,84 +366,80 @@ const UserProfile: React.FC = () => {
         )}
       </div>
       
-      
       <div className="mt-12"></div>
       
-
       {/* Listings Toggle Button */}
-
       {firebaseUser && firebaseUser.uid === uidFromURL && emailAuthVerified && (
-          <div className="flex space-x-4">
-            <button
-              onClick={() => setViewSaved(false)}
-              className={`py-2 px-4 rounded ${!viewSaved ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-            >
-              Your Listings
-            </button>
-            <button
-              onClick={() => setViewSaved(true)}
-              className={`py-2 px-4 rounded ${viewSaved ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-            >
-              Saved Listings
-            </button>
-          </div>
-        )}
+        <div className="flex space-x-4">
+          <button
+            onClick={() => setViewSaved(false)}
+            className={`py-2 px-4 rounded ${!viewSaved ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+          >
+            Your Listings
+          </button>
+          <button
+            onClick={() => setViewSaved(true)}
+            className={`py-2 px-4 rounded ${viewSaved ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+          >
+            Saved Listings
+          </button>
+        </div>
+      )}
         
-
-        {/* UnBlock popup */}
-        {showBlockedPopup && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className={`bg-white ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"} rounded-lg shadow-lg p-6 w-96`}>
-              <h2 className="text-xl font-bold mb-4">Blocked Users</h2>
-              {blockedUsers.length > 0 ? (
-                <ul className="space-y-4">
-                  {blockedUsers.map((blockedUser) => (
-                    <li key={blockedUser.uid} className="flex justify-between items-center">
-                      <span>{blockedUser.displayName || blockedUser.email}</span>
-                      <button
-                        onClick={() => handleUnblockUser(blockedUser.uid)}
-                        className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
-                      >
-                        Unblock
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-500">No blocked users found.</p>
-              )}
-              <div className="mt-4 flex justify-end">
-                <button
-                  onClick={() => setShowBlockedPopup(false)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
-                >
-                  Close
-                </button>
-              </div>
+      {/* UnBlock popup */}
+      {showBlockedPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className={`bg-white ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"} rounded-lg shadow-lg p-6 w-96`}>
+            <h2 className="text-xl font-bold mb-4">Blocked Users</h2>
+            {blockedUsers.length > 0 ? (
+              <ul className="space-y-4">
+                {blockedUsers.map((blockedUser) => (
+                  <li key={blockedUser.uid} className="flex justify-between items-center">
+                    <span>{blockedUser.displayName || blockedUser.email}</span>
+                    <button
+                      onClick={() => handleUnblockUser(blockedUser.uid)}
+                      className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
+                    >
+                      Unblock
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500">No blocked users found.</p>
+            )}
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setShowBlockedPopup(false)}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+              >
+                Close
+              </button>
             </div>
           </div>
-        )}
-        
-        {emailAuthVerified ? (
-  <>
-    {/* Listings Section */}
-    <div className="user-listing-container mt-6">
-      {(viewSaved ? savedListings : userListings).length > 0 ? (
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
-          {(viewSaved ? savedListings : userListings).map((listing, index) => (
-            <ListingCard
-              key={index}
-              listing={listing}
-              userOwnsListing={!viewSaved && firebaseUser?.uid === uidFromURL}
-            />
-          ))}
         </div>
-      ) : (
-        <p className="text-center mt-4 text-gray-500">
-          {viewSaved ? "No saved listings." : "No listings found."}
-        </p>
       )}
-        </div>
+        
+      {emailAuthVerified ? (
+        <>
+          {/* Listings Section */}
+          <div className="user-listing-container mt-6">
+            {(viewSaved ? savedListings : userListings).length > 0 ? (
+              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
+                {(viewSaved ? savedListings : userListings).map((listing, index) => (
+                  <ListingCard
+                    key={index}
+                    listing={listing}
+                    userOwnsListing={!viewSaved && firebaseUser?.uid === uidFromURL}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-center mt-4 text-gray-500">
+                {viewSaved ? "No saved listings." : "No listings found."}
+              </p>
+            )}
+          </div>
         </>
       ) : (
         firebaseUser?.uid === uidFromURL && (
@@ -456,7 +448,6 @@ const UserProfile: React.FC = () => {
           </p>
         )
       )}
-
     </div>
   );
 };
