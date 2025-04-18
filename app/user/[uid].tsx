@@ -89,6 +89,7 @@ const UserProfile: React.FC = () => {
         if (!data || !data.email) {
           setError("User not found");
         } else {
+          // console.log(data);
           setUser(data);
           setPurdueEmail(data.purdueEmail || "");
         }
@@ -167,6 +168,8 @@ const UserProfile: React.FC = () => {
       return total + listing.saved_by.length;
     }, 0);
   };
+
+
 
   const handleViewBlockedUsers = async () => {
     try {
@@ -384,6 +387,14 @@ const UserProfile: React.FC = () => {
           <div className="mt-4 flex items-center">
             <span className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"} w-1/3 font-semibold`}>Saves on Owned Listings:</span>
             <span className="w-1/2">{getTotalSaves()}</span>
+          </div>
+        )}
+
+         {/* # of views from each Listings */}
+         {firebaseUser && firebaseUser.uid === uidFromURL && (
+          <div className="mt-4 flex items-center">
+            <span className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"} w-1/3 font-semibold`}>Total Views From Listings</span>
+            <span className="w-1/2">{user?.views}</span>
           </div>
         )}
       </div>

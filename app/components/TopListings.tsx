@@ -16,6 +16,7 @@ interface Listing {
   hidden: boolean;
   sold: boolean;
   profilePicture: string;
+  views: number;
 }
 
 const TopListings: React.FC = () => {

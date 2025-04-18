@@ -141,7 +141,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, userOwnsListi
         <div className="p-4">
           <h3 className="text-xl font-semibold text-gray-800">{listing.title}</h3>
           {listing.displayName && (
-            <p className="mt-1 text-gray-500 text-sm">{listing.displayName}</p>
+            <p className="mt-1 text-gray-500 text-sm">Username: {listing.displayName}</p>
           )}
           <p className="mt-2 text-gray-700 font-medium">
             Price:
