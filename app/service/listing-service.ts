@@ -160,7 +160,7 @@ export async function unsaveListing(
 export async function incrementListingView(
   lid: number
 ): Promise<{ views: number }> {
-  console.log("incrementing view count");
+  // console.log("incrementing view count");
   const response = await fetch(
     `${import.meta.env.VITE_BASE_URL}/api/listing/incrementView/${lid}/`,
     {
