@@ -9,6 +9,7 @@ export interface UserProfileData {
     bio?: string;
     admin: boolean;
     banned: boolean;
+    views: number;
 }
 
 export interface InboxRoomData {

@@ -10,5 +10,6 @@ interface Listing {
   image?: string;
   displayName?: string;
   uid: string;
+  views: number;
 }
 

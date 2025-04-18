@@ -154,3 +154,24 @@ export async function unsaveListing(
     return response.json();
 
 }
+
+
+
+export async function incrementListingView(
+  lid: number
+): Promise<{ views: number }> {
+  console.log("incrementing view count");
+  const response = await fetch(
+    `${import.meta.env.VITE_BASE_URL}/api/listing/incrementView/${lid}/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Unable to increment view count");
+  }
+  return response.json();
+}
