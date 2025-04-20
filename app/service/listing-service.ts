@@ -174,26 +174,3 @@ export async function incrementListingView(
   }
   return response.json();
 }
-
-
-export async function addToHistory(
-  lid: number,
-  idToken: string,
-  userId: string
-): Promise<void> {
-  const response = await fetch(
-    `${import.meta.env.VITE_BASE_URL}/api/user/addToHistory/`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${idToken}`,
-      },
-      body: JSON.stringify({ lid, userId }),
-    }
-  );
-  if (!response.ok) {
-    throw new Error("Unable to add to history");
-  }
-  return response.json();
-}

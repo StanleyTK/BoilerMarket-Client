@@ -12,9 +12,9 @@ import {
   getListing,
   incrementListingView,
   saveListing,
-  unsaveListing,
-  addToHistory
+  unsaveListing
 } from "~/service/listing-service";
+import { addToHistory } from "~/service/user-service";
 import { Link } from "react-router-dom";
 import {
   getAuth,
