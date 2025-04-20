@@ -4,21 +4,7 @@ import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faUser, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { faUserPen } from '@fortawesome/free-solid-svg-icons/faUserPen';
-
-interface Listing {
-  id: number;
-  title: string;
-  description: string;
-  price: number | string;
-  original_price: number | string;
-  image?: string;
-  displayName?: string;
-  uid: string;
-  hidden: boolean;
-  sold: boolean;
-  profilePicture: string;
-  media?: string[];
-}
+import type { Listing } from '../service/types';
 
 interface ListingCardProps {
   listing: Listing;
@@ -155,6 +141,6 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, userOwnsListi
           <p className="mt-2 text-gray-600 text-sm">{listing.description}</p>
         </div>
       </div>
-      </Link>
+    </Link>
   );
 };

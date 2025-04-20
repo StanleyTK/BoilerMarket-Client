@@ -34,3 +34,18 @@ export interface MessageData {
     content: string;
     timeSent: string;
 }
+
+export interface Listing {
+    id: number;
+    title: string;
+    description: string;
+    price: number | string;
+    original_price: number | string;
+    image?: string;
+    displayName?: string;
+    uid: string;
+    hidden: boolean;
+    sold: boolean;
+    profilePicture: string;
+    media?: string[];
+}
