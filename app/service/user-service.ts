@@ -1,5 +1,5 @@
 import { deleteUser, type User } from "firebase/auth";
-import type { UserProfileData } from "./types";
+import type { UserProfileData, Listing } from "./types";
 import crypto from "crypto";
 
 export async function registerUser(uid: string, email: string, displayName: string, bio: string, idToken: string) {
@@ -226,4 +226,26 @@ export async function addToHistory(
         throw new Error("Unable to add to history");
     }
     return response.json();
+}
+
+
+export async function getHistory(
+    idToken: string,
+    userId: string
+): Promise<Listing[]> {
+    const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/user/getHistory/${userId}/`,
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${idToken}`,
+            },
+        }
+    );
+    if (!response.ok) {
+        throw new Error("Unable to get history");
+    }
+    const data: Listing[] = await response.json();
+    return data;
 }
