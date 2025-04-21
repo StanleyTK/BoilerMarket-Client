@@ -1,5 +1,5 @@
 import { deleteUser, type User } from "firebase/auth";
-import type { UserProfileData } from "./types";
+import type { UserProfileData, Listing } from "./types";
 import crypto from "crypto";
 
 export async function registerUser(uid: string, email: string, displayName: string, bio: string, idToken: string) {
@@ -38,47 +38,47 @@ async function deleteUserFromDatabase(uid: string, idToken: string) {
 export async function updateUser(
     idToken: string,
     updateData: {
-      displayName: string;
-      bio: string;
-      profilePicture?: File | null;
-      removeProfilePicture?: boolean;
+        displayName: string;
+        bio: string;
+        profilePicture?: File | null;
+        removeProfilePicture?: boolean;
     }
-  ) {
+) {
     const formData = new FormData();
     formData.append("displayName", updateData.displayName);
     formData.append("bio", updateData.bio);
     if (updateData.profilePicture) {
-      formData.append("profilePicture", updateData.profilePicture);
+        formData.append("profilePicture", updateData.profilePicture);
     }
     if (updateData.removeProfilePicture) {
-      formData.append("removeProfilePicture", "true");
+        formData.append("removeProfilePicture", "true");
     }
-  
+
     const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/user/update/`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
-      body: formData,
+        method: "PUT",
+        headers: {
+            Authorization: `Bearer ${idToken}`,
+        },
+        body: formData,
     });
-  
+
     if (!response.ok) {
-      throw new Error("Failed to update user");
+        throw new Error("Failed to update user");
     }
-  
+
     return response.json();
-  }
-  
+}
+
 
 
 export async function getUser(uid: string): Promise<UserProfileData> {
     const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/api/user/info/${uid}`,
         {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        },
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
         }
     );
 
@@ -146,21 +146,21 @@ export async function checkEmailAuth(idToken: string) {
 
     if (!response.ok) {
         throw new Error('Failed to check Purdue verification');
-    }    
+    }
 
     return response.json();
 }
 
 
-export async function blockUser(uid: string, idToken: string){
+export async function blockUser(uid: string, idToken: string) {
     const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/api/user/blockUser/${uid}/`,
         {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            'Authorization': `Bearer ${idToken}`,
-        },
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${idToken}`,
+            },
         }
     );
 
@@ -169,15 +169,15 @@ export async function blockUser(uid: string, idToken: string){
     }
 }
 
-export async function unblockUser(uid: string, idToken: string){
+export async function unblockUser(uid: string, idToken: string) {
     const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/api/user/unblockUser/${uid}/`,
         {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            'Authorization': `Bearer ${idToken}`,
-        },
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${idToken}`,
+            },
         }
     );
 
@@ -187,15 +187,15 @@ export async function unblockUser(uid: string, idToken: string){
 }
 
 
-export async function fetchBlockedUsers(idToken: string){
+export async function fetchBlockedUsers(idToken: string) {
     const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/api/user/getBlockedUsers/`,
         {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            'Authorization': `Bearer ${idToken}`,
-        },
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${idToken}`,
+            },
         }
     );
 
@@ -203,4 +203,49 @@ export async function fetchBlockedUsers(idToken: string){
         throw new Error("Failed to fetch users");
     }
     return response.json();
+}
+
+
+export async function addToHistory(
+    lid: number,
+    idToken: string,
+    userId: string
+): Promise<void> {
+    const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/user/addToHistory/`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ lid, userId }),
+        }
+    );
+    if (!response.ok) {
+        throw new Error("Unable to add to history");
+    }
+    return response.json();
+}
+
+
+export async function getHistory(
+    idToken: string,
+    userId: string
+): Promise<Listing[]> {
+    const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/user/getHistory/${userId}/`,
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${idToken}`,
+            },
+        }
+    );
+    if (!response.ok) {
+        throw new Error("Unable to get history");
+    }
+    const data: Listing[] = await response.json();
+    return data;
 }
