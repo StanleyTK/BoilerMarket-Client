@@ -12,8 +12,9 @@ import {
   getListing,
   incrementListingView,
   saveListing,
-  unsaveListing,
+  unsaveListing
 } from "~/service/listing-service";
+import { addToHistory } from "~/service/user-service";
 import { Link } from "react-router-dom";
 import {
   getAuth,
@@ -105,6 +106,15 @@ const ListingPage: React.FC = () => {
           hasIncremented.current = true;
           data.views = Number(data.views) + 1;
           incrementListingView(Number(lidFromURL)).catch(console.error);
+        }
+
+        /* add to history if logged in */
+        if (authUser) {
+          console.log("Adding to history", lidFromURL, authUser.uid);
+          const idToken = await authUser.getIdToken();
+          addToHistory(Number(lidFromURL), idToken, String(authUser.uid)).catch(console.error);
+        } else {
+          console.log("Not logged in, not adding to history");
         }
 
         setListing(data);

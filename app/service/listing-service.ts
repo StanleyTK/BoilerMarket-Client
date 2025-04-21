@@ -89,72 +89,71 @@ export async function updateListing(
 
 export async function getListing(
   lid: number,
-){
+) {
 
-    const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/api/listing/getListing/${lid}`,
-        {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        }
-    );
-
-    if (!response.ok) {
-        throw new Error("Listing not found");
+  const response = await fetch(
+    `${import.meta.env.VITE_BASE_URL}/api/listing/getListing/${lid}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
     }
+  );
 
-    return response.json();
+  if (!response.ok) {
+    throw new Error("Listing not found");
+  }
+
+  return response.json();
 }
 
 export async function saveListing(
   lid: number,
   idToken: string
-){
+) {
 
-    const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/api/listing/save/${lid}/`,
-        {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            'Authorization': `Bearer ${idToken}`,
-        },
-        }
-    );
-
-    if (!response.ok) {
-        throw new Error("Unable to save listing");
+  const response = await fetch(
+    `${import.meta.env.VITE_BASE_URL}/api/listing/save/${lid}/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${idToken}`,
+      },
     }
+  );
 
-    return response.json();
+  if (!response.ok) {
+    throw new Error("Unable to save listing");
+  }
+
+  return response.json();
 }
 
 export async function unsaveListing(
   lid: number,
   idToken: string
-){
+) {
 
-    const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/api/listing/unsave/${lid}/`,
-        {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            'Authorization': `Bearer ${idToken}`,
-        },
-        }
-    );
-
-    if (!response.ok) {
-        throw new Error("Unable to unsave isting");
+  const response = await fetch(
+    `${import.meta.env.VITE_BASE_URL}/api/listing/unsave/${lid}/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${idToken}`,
+      },
     }
+  );
 
-    return response.json();
+  if (!response.ok) {
+    throw new Error("Unable to unsave isting");
+  }
+
+  return response.json();
 
 }
-
 
 
 export async function incrementListingView(
