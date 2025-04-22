@@ -249,3 +249,25 @@ export async function getHistory(
     const data: Listing[] = await response.json();
     return data;
 }
+
+
+export async function getRecommended(
+    idToken: string,
+    userId: string
+): Promise<Listing[]> {
+    const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/user/getRec/${userId}/`,
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${idToken}`,
+            },
+        }
+    );
+    if (!response.ok) {
+        throw new Error("Unable to get recommended listings");
+    }
+    const data: Listing[] = await response.json();
+    return data;
+}
