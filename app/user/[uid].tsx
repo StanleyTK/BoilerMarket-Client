@@ -184,13 +184,14 @@ const UserProfile: React.FC = () => {
     }
   };
 
-  const handleUnblockUser = async (blockedUid: string) => {
+  const handleUnblockUser = async (blockedUid: string, displayName: string) => {
     try {
       const idToken = await firebaseUser?.getIdToken();
+
       if (!idToken) throw new Error("User not authenticated");
       await unblockUser(blockedUid, idToken);
       setBlockedUsers((prev) => prev.filter((user) => user.uid !== blockedUid));
-      alert(`User ${blockedUid} has been unblocked.`);
+      alert(`${displayName} has been unblocked.`);
       try {
         const currentUser = auth.currentUser;
         const idToken = await currentUser?.getIdToken();
@@ -240,7 +241,7 @@ const UserProfile: React.FC = () => {
                   try {
                     const idToken = await firebaseUser.getIdToken();
                     await blockUser(uidFromURL!, idToken);
-                    alert(`User ${uidFromURL} has been blocked.`);
+                    alert(`${user?.displayName} has been blocked.`);
                     navigate("/");
                   } catch (err) {
                     console.error(err);
@@ -430,7 +431,7 @@ const UserProfile: React.FC = () => {
                   <li key={blockedUser.uid} className="flex justify-between items-center">
                     <span>{blockedUser.displayName || blockedUser.email}</span>
                     <button
-                      onClick={() => handleUnblockUser(blockedUser.uid)}
+                      onClick={() => handleUnblockUser(blockedUser.uid, blockedUser.displayName)}
                       className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
                     >
                       Unblock
