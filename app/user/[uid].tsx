@@ -7,7 +7,9 @@ import { deleteUserWrapper, getUser, sendPurdueVerification, checkEmailAuth } fr
 import type { UserProfileData } from "~/service/types";
 import { fetchListingByUser, fetchSavedListings } from '~/service/fetch-listings';
 import { blockUser } from "~/service/user-service";
+import { createReport, getByReports } from "~/service/report-service";
 import { useTheme } from "~/components/ThemeContext";
+import ReportCard from '~/components/ReportCard';
 import { ListingCard } from '~/components/ListingCard';
 import { unblockUser, fetchBlockedUsers } from "~/service/user-service"; 
 
@@ -27,6 +29,13 @@ interface Listing {
   media?: string[];
 }
 
+interface Report {
+  title: string;
+  description: string;
+  reported_uid: string;
+  uid: string;
+}
+
 const UserProfile: React.FC = () => {
   const auth = getAuth(getApp());
   const { uid: uidFromURL } = useParams<{ uid: string }>();
@@ -44,7 +53,17 @@ const UserProfile: React.FC = () => {
   const [viewSaved, setViewSaved] = useState(false);
   const [showBlockedPopup, setShowBlockedPopup] = useState(false);
   const [blockedUsers, setBlockedUsers] = useState<UserProfileData[]>([]);
+  const [showReportPopup, setShowReportPopup] = useState(false);
+  const [reportTitle, setReportTitle] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
   const [blocked, setBlocked] = useState(false);
+
+  const [showReports, setShowReports] = useState(false);
+  const handleOpenReports = () => setShowReports(true);
+  const handleCloseReports = () => setShowReports(false);
+  const [reportsBy, setReportsBy] = useState<Report[]>([]);
+
 
 
   // Listen for authentication state changes.
@@ -136,7 +155,21 @@ const UserProfile: React.FC = () => {
         console.error("Error fetching blocked users:", error);
       }
     };
-    
+
+    const getReportsByUser = async (userId: string) => {
+      if (firebaseUser && firebaseUser.uid === uidFromURL) {
+        try {
+          const idToken = await firebaseUser?.getIdToken();
+          const reports = await getByReports(uidFromURL,idToken) 
+          setReportsBy(reports);
+        }
+        catch (error) {
+          console.error("Error fetching reports:", error);
+        }
+      }
+    } 
+
+    getReportsByUser(uidFromURL!);
     checkBlocked();
     getSavedListings();
     fetchUserData();
@@ -184,13 +217,14 @@ const UserProfile: React.FC = () => {
     }
   };
 
-  const handleUnblockUser = async (blockedUid: string) => {
+  const handleUnblockUser = async (blockedUid: string, displayName: string) => {
     try {
       const idToken = await firebaseUser?.getIdToken();
+
       if (!idToken) throw new Error("User not authenticated");
       await unblockUser(blockedUid, idToken);
       setBlockedUsers((prev) => prev.filter((user) => user.uid !== blockedUid));
-      alert(`User ${blockedUid} has been unblocked.`);
+      alert(`${displayName} has been unblocked.`);
       try {
         const currentUser = auth.currentUser;
         const idToken = await currentUser?.getIdToken();
@@ -225,9 +259,9 @@ const UserProfile: React.FC = () => {
     <div className={`min-h-screen ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"} p-6 flex flex-col items-center relative`}>
       <div className={`w-full max-w-2xl ${theme === "dark" ? "bg-gray-700" : "bg-gray-300"} shadow-lg rounded-xl p-8 relative`}>
 
-        {/* Block User Button: Only visible if this is not your profile and you are logged in */}
-        {firebaseUser && firebaseUser.uid !== uidFromURL && (
-        <div className="flex justify-end mt-1">
+      {firebaseUser && firebaseUser.uid !== uidFromURL && (
+        <div className="flex flex-col items-end gap-2 mt-1">
+          {/* Block User Button */}
           {blocked ? (
             <span className="px-4 py-2 rounded-lg bg-gray-100 text-gray-500 border border-gray-300 shadow-sm">
               Blocked
@@ -240,7 +274,7 @@ const UserProfile: React.FC = () => {
                   try {
                     const idToken = await firebaseUser.getIdToken();
                     await blockUser(uidFromURL!, idToken);
-                    alert(`User ${uidFromURL} has been blocked.`);
+                    alert(`${user?.displayName || "User"} has been blocked.`);
                     navigate("/");
                   } catch (err) {
                     console.error(err);
@@ -248,27 +282,22 @@ const UserProfile: React.FC = () => {
                   }
                 }
               }}
-              className="flex items-center gap-2 bg-red-100 text-red-700 hover:bg-red-200 transition-colors px-4 py-2 rounded-lg shadow-sm border border-red-300"
+              className="bg-red-100 text-red-700 hover:bg-red-200 transition-colors px-4 py-2 rounded-lg shadow-sm border border-red-300 w-fit"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M18.364 5.636A9 9 0 115.636 18.364 9 9 0 0118.364 5.636zM15 9l-6 6"
-                />
-              </svg>
               Block User
             </button>
           )}
+
+          {/* Report User Button */}
+          <button
+            onClick={() => setShowReportPopup(true)}
+            className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition-colors px-4 py-2 rounded-lg shadow-sm border border-yellow-300 font-medium w-fit"
+          >
+            Report User
+          </button>
         </div>
       )}
+
 
         {/* Plus Button: Only visible if this is your profile and email auth is verified */}
         {firebaseUser && firebaseUser.uid === uidFromURL && emailAuthVerified && (
@@ -363,22 +392,34 @@ const UserProfile: React.FC = () => {
           )}
         </div>
 
-        {/* Edit Account and View Blocked Button */}
         {firebaseUser && firebaseUser.uid === uidFromURL && (
-          <div className="mt-6 flex justify-between flex-wrap gap-2">
-            <button
-              onClick={() => navigate(`/u/${uidFromURL}/edit`)}
-              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow border border-white"
-            >
-              Edit Account
-            </button>
+          <div className="mt-6 flex flex-wrap gap-2 w-full">
+            {/* Left-aligned button with consistent sizing */}
+            <div className="flex flex-col gap-2 min-w-[200px]">
+              <button
+                onClick={() => navigate(`/u/${uidFromURL}/edit`)}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow border border-white"
+              >
+                Edit Account
+              </button>
+            </div>
 
-            <button
-              onClick={() => handleViewBlockedUsers()}
-              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow border border-white"
-            >
-              View Blocked Users
-            </button>
+            {/* Right-aligned buttons stacked vertically */}
+            <div className="flex flex-col gap-2 ml-auto min-w-[200px]">
+              <button
+                onClick={() => handleViewBlockedUsers()}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow border border-white"
+              >
+                View Blocked Users
+              </button>
+
+              <button
+                onClick={() => handleOpenReports()}
+                className="w-full bg-yellow-400 hover:bg-yellow-500 text-black py-2 px-4 rounded-lg shadow border border-white"
+              >
+                View Reports
+              </button>
+            </div>
           </div>
         )}
 
@@ -430,7 +471,7 @@ const UserProfile: React.FC = () => {
                   <li key={blockedUser.uid} className="flex justify-between items-center">
                     <span>{blockedUser.displayName || blockedUser.email}</span>
                     <button
-                      onClick={() => handleUnblockUser(blockedUser.uid)}
+                      onClick={() => handleUnblockUser(blockedUser.uid, blockedUser.displayName)}
                       className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
                     >
                       Unblock
@@ -448,6 +489,96 @@ const UserProfile: React.FC = () => {
               >
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* Report User Popup */}
+      {showReportPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+            <h2 className="text-xl font-semibold mb-4">Report User</h2>
+            
+            <label className="block mb-2 text-sm font-medium">Title</label>
+            <input
+              value={reportTitle}
+              onChange={(e) => setReportTitle(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2 mb-4"
+              placeholder="Enter a short title"
+            />
+
+            <label className="block mb-2 text-sm font-medium">Description</label>
+            <textarea
+              value={reportDescription}
+              onChange={(e) => setReportDescription(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2 h-24"
+              placeholder="Provide more details..."
+            />
+
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                onClick={() => setShowReportPopup(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={isSubmittingReport || !reportTitle.trim()}
+                onClick={async () => {
+                  if (!firebaseUser) return;
+                  setIsSubmittingReport(true);
+                  try {
+                    const idToken = await firebaseUser.getIdToken();
+                    await createReport(
+                        idToken,
+                        firebaseUser.uid,
+                        uidFromURL!,
+                        reportTitle.trim(),
+                        reportDescription.trim(),
+                    );
+                    alert(`${user?.displayName || "User"} has been reported.`);
+                    setShowReportPopup(false);
+                    setReportTitle("");
+                    setReportDescription("");
+                  } catch (err) {
+                    console.error(err);
+                    alert("Failed to report user: " + (err as Error).message);
+                  } finally {
+                    setIsSubmittingReport(false);
+                  }
+                }}
+                className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50"
+              >
+                Submit Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+        
+      {/* Reports Section for Current User*/}
+      {showReports && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-xl p-6 max-w-xl w-full shadow-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Reports</h2>
+              <button
+                onClick={handleCloseReports}
+                className="text-gray-500 hover:text-gray-800 text-xl"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="max-h-[400px] overflow-y-auto">
+              {/* Replace with dynamic report data */}
+              <ul className="list-disc pl-5 space-y-2">
+                {reportsBy.map((report, index) => (
+                  <ReportCard key={index} report={report} />
+                ))}
+              </ul>
             </div>
           </div>
         </div>
@@ -482,6 +613,8 @@ const UserProfile: React.FC = () => {
           </p>
         )}
     </div>
+
+    
   );
 };
 
