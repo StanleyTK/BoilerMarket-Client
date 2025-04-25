@@ -4,6 +4,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { getAuth, signOut } from "firebase/auth";
 import { getApp } from "firebase/app";
 import { useSearch } from "./MainLayout";
+import { isAdmin } from "../service/admin-service";
 
 const Navbar: React.FC = () => {
   const auth = getAuth(getApp());
@@ -13,6 +14,26 @@ const Navbar: React.FC = () => {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const { searchQuery, setSearchQuery, handleSearch } = useSearch();
+  const [userIsAdmin, setUserIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (user) {
+        try {
+          const token = await user.getIdToken();
+          const result = await isAdmin(token);
+          setUserIsAdmin(result);
+        } catch (error) {
+          console.error("Error checking admin status", error);
+          setUserIsAdmin(false);
+        }
+      } else {
+        setUserIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [user]);
 
   const toggleMenu = () => setMenuOpen((prev) => !prev);
 
@@ -23,6 +44,15 @@ const Navbar: React.FC = () => {
       navigate("/login");
     } catch (error) {
       console.error("Error signing out", error);
+    }
+  };
+
+  const handleAdminClick = () => {
+    setMenuOpen(false);
+    if (isLoggedIn) {
+      navigate("/admin");
+    } else {
+      navigate("/login");
     }
   };
 
@@ -97,6 +127,11 @@ const Navbar: React.FC = () => {
 
         {/* Right Section: Profile & Dropdown Menu */}
         <div className="flex items-center space-x-4">
+            {userIsAdmin && (
+            <button onClick={handleAdminClick} className="font-semibold hover:underline">
+              Admin Analytics
+            </button>
+            )}
           <button onClick={handleProfileClick} className="font-semibold hover:underline">
             View My Profile
           </button>
