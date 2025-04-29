@@ -67,3 +67,19 @@ export async function getSoldListings(idToken: string) {
     const data = await response.json();
     return data["sold_listings"];
 }
+
+export async function getHiddenListings(idToken: string) {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/listing/getHiddenListings`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch hidden listings');
+    }
+    const data = await response.json();
+    return data["hidden_listings"];
+}
