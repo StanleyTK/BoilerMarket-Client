@@ -1,13 +1,13 @@
 import { getApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
-import { getConncetedUsers, isAdmin } from '~/service/admin-service';
+import { getActiveListings, getConncetedUsers, isAdmin } from '~/service/admin-service';
 
 const AdminDashboard: React.FC = () => {
     const [currentUsersOnline, setCurrentUsersOnline] = useState(0);
-    const [listingsUp, setListingsUp] = useState(0);
-    const [listingsSold, setListingsSold] = useState(0);
-    const [listingsHidden, setListingsHidden] = useState(0);
+    const [activeListings, setActiveListings] = useState(0);
+    const [soldListings, setSoldListings] = useState(0);
+    const [hiddenListings, setHiddenListings] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [userIsAdmin, setUserIsAdmin] = useState(false);
@@ -42,12 +42,13 @@ const AdminDashboard: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             if (!userIsAdmin) {
-                setLoading(false);
                 return;
             }
             try {
                 const token = await authUser?.getIdToken();
                 setCurrentUsersOnline(await getConncetedUsers(token));
+                setActiveListings(await getActiveListings(token));
+                setLoading(false);
             } catch (error) {
                 console.error('Error fetching data', error);
                 setError('Failed to fetch data');
@@ -79,15 +80,15 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div style={cardStyle}>
                     <h2>Listings Up</h2>
-                    <p>{listingsUp}</p>
+                    <p>{activeListings}</p>
                 </div>
                 <div style={cardStyle}>
                     <h2>Listings Sold</h2>
-                    <p>{listingsSold}</p>
+                    <p>{soldListings}</p>
                 </div>
                 <div style={cardStyle}>
                     <h2>Listings Hidden</h2>
-                    <p>{listingsHidden}</p>
+                    <p>{hiddenListings}</p>
                 </div>
             </div>
         </div>
