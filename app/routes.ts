@@ -15,5 +15,6 @@ export default [
     route("u/:uid/createlisting", "./create_listing/create_listing.tsx"),
     route("about", "./about/about.tsx"),
     route("inbox/:rid?", "./inbox/inbox.tsx"),
+    route("admin", "./admin/admin.tsx"),
   ]),
 ] satisfies RouteConfig;
