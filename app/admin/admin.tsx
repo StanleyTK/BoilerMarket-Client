@@ -1,7 +1,7 @@
 import { getApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
-import { getActiveListings, getConncetedUsers, getSoldListings, isAdmin } from '~/service/admin-service';
+import { getActiveListings, getConncetedUsers, getHiddenListings, getSoldListings, isAdmin } from '~/service/admin-service';
 
 const AdminDashboard: React.FC = () => {
     const [currentUsersOnline, setCurrentUsersOnline] = useState(0);
@@ -49,6 +49,7 @@ const AdminDashboard: React.FC = () => {
                 setCurrentUsersOnline(await getConncetedUsers(token));
                 setActiveListings(await getActiveListings(token));
                 setSoldListings(await getSoldListings(token));
+                setHiddenListings(await getHiddenListings(token));
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching data', error);
