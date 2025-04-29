@@ -4,7 +4,7 @@ import { getAuth } from 'firebase/auth';
 import TopListings from '../components/TopListings';
 import { useTheme } from '~/components/ThemeContext';
 import type { Listing } from '../service/types';
-import { getHistory } from '../service/user-service';
+import { getHistory, getRecommended } from '../service/user-service';
 import { ListingCard } from '~/components/ListingCard';
 
 const Feed: React.FC = () => {
@@ -13,13 +13,15 @@ const Feed: React.FC = () => {
   const { theme } = useTheme();
 
   const [recentlyViewed, setRecentlyViewed] = useState<Listing[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [recommended, setRecommended] = useState<Listing[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState<boolean>(true);
+  const [loadingRecommended, setLoadingRecommended] = useState<boolean>(true);
 
   useEffect(() => {
     if (user) {
-      const fetchData = async () => {
+      const fetchHistory = async () => {
         try {
-          setLoading(true);
+          setLoadingHistory(true);
           const currentUser = auth.currentUser;
           if (!currentUser) {
             throw new Error("User not authenticated");
@@ -30,11 +32,29 @@ const Feed: React.FC = () => {
         } catch (error) {
           console.error('Error fetching recently viewed items:', error);
         } finally {
-          setLoading(false);
+          setLoadingHistory(false);
         }
       };
 
-      fetchData();
+      const fetchRecommended = async () => {
+        try {
+          setLoadingRecommended(true);
+          const currentUser = auth.currentUser;
+          if (!currentUser) {
+            throw new Error("User not authenticated");
+          }
+          const idToken = await currentUser.getIdToken();
+          const data = await getRecommended(idToken, user.uid);
+          setRecommended(data);
+        } catch (error) {
+          console.error('Error fetching recommended items:', error);
+        } finally {
+          setLoadingRecommended(false);
+        }
+      };
+
+      fetchHistory();
+      fetchRecommended();
     }
   }, [user]);
 
@@ -46,7 +66,7 @@ const Feed: React.FC = () => {
           <div>
             <h2 className="text-2xl font-bold mb-4">Recently Viewed:</h2>
             <div className="mb-8">
-              {loading ? (
+              {loadingHistory ? (
                 <p>Loading...</p>
               ) : recentlyViewed.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -59,9 +79,18 @@ const Feed: React.FC = () => {
               )}
             </div>
             <h2 className="text-2xl font-bold mb-4">Recommended:</h2>
-            {/* Add content for recommended items here */}
-            <div>
-              <p>Your recommended items will appear here.</p>
+            <div className="mb-8">
+              {loadingRecommended ? (
+                <p>Loading...</p>
+              ) : recommended.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {recommended.map((item) => (
+                    <ListingCard key={item.id} listing={item} />
+                  ))}
+                </div>
+              ) : (
+                <p>No recommended items found.</p>
+              )}
             </div>
           </div>
         ) : (
