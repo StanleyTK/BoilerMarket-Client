@@ -16,5 +16,6 @@ export default [
     route("about", "./about/about.tsx"),
     route("inbox/:rid?", "./inbox/inbox.tsx"),
     route("admin", "./admin/admin.tsx"),
+    route("appeal", "./appeal/appeal.tsx"),
   ]),
 ] satisfies RouteConfig;
