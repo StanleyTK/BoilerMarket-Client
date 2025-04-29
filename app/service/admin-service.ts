@@ -51,3 +51,19 @@ export async function getActiveListings(idToken: string) {
     const data = await response.json();
     return data["active_listings"];
 }
+
+export async function getSoldListings(idToken: string) {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/listing/getSoldListings`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch sold listings');
+    }
+    const data = await response.json();
+    return data["sold_listings"];
+}
