@@ -1,33 +1,50 @@
 import React, { useState } from 'react';
-import './appeal.css'; // Import the CSS file
+import './appeal.css';
 import { useTheme } from '~/components/ThemeContext';
+import { useBannedUser } from '~/components/MainLayout';
+import { sendAppeal } from '~/service/user-service';
+import { getAuth } from 'firebase/auth';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 const AppealPage: React.FC = () => {
     const [appealMessage, setAppealMessage] = useState('');
     const { theme } = useTheme();
+    const { banAppeal, setBanAppeal } = useBannedUser();
+    const auth = getAuth();
+    const [user] = useAuthState(auth);
 
-    const handleSubmit = () => {
-        if (appealMessage.trim() === '') {
-            alert('Please enter a message before submitting.');
-            return;
+    const handleSubmit = async () => {
+        if (appealMessage.trim() === '' && user) {
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                throw new Error("User not authenticated");
+            }
+            const idToken = await currentUser.getIdToken();
+            sendAppeal(idToken, user.uid, appealMessage)
         }
-        // Handle the appeal submission logic here (e.g., send to API)
-        alert('Your appeal has been submitted.');
-        setAppealMessage(''); // Clear the text box after submission
+        setAppealMessage('');
     };
 
     return (
         <div className={`${theme === "dark" ? "dark-appeal-container" : "light-appeal-container"} min-h-screen`}>
             <h1 className={`${theme === "dark" ? "dark-appeal-title" : "light-appeal-title"}`}>Appeal Your Ban</h1>
-            <textarea
-                className={`${theme === "dark" ? "dark-appeal-textbox" : "light-appeal-textbox"}`}
-                value={appealMessage}
-                onChange={(e) => setAppealMessage(e.target.value)}
-                placeholder="Type your appeal message here..."
-            />
-            <button className={`${theme === "dark" ? "dark-appeal-button" : "light-appeal-button"}`} onClick={handleSubmit}>
-                Submit Appeal
-            </button>
+            {banAppeal ? (
+                <p className={`${theme === "dark" ? "dark-appeal-text" : "light-appeal-text"}`}>
+                    Appeal pending review
+                </p>
+            ) : (
+                <>
+                    <textarea
+                        className={`${theme === "dark" ? "dark-appeal-textbox" : "light-appeal-textbox"}`}
+                        value={appealMessage}
+                        onChange={(e) => setAppealMessage(e.target.value)}
+                        placeholder="Type your appeal message here..."
+                    />
+                    <button className={`${theme === "dark" ? "dark-appeal-button" : "light-appeal-button"}`} onClick={handleSubmit}>
+                        Submit Appeal
+                    </button>
+                </>
+            )}
         </div>
     );
 };

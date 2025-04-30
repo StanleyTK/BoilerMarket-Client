@@ -1,20 +1,33 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ServiceContainer } from '~/service/service-container';
+import { getBAndAStatus } from '~/service/user-service';
+import { useBannedUser } from '~/components/MainLayout';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const authService = useMemo(() => ServiceContainer.instance().authService, []);
   const navigate = useNavigate();
+  const { setBanAppeal, setUserBanned } = useBannedUser();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     try {
       const user = await authService.login(email, password);
-      console.log('token', await user.user.getIdToken());
-      // Redirect to the home page after successful login
-      navigate('/');
+      const idToken = await user.user.getIdToken();
+      console.log('token', idToken);
+
+      const status = await getBAndAStatus(idToken, user.user.uid);
+
+      setUserBanned(status.banned);
+      setBanAppeal(status.appealPending);
+
+      if (status.banned) {
+        navigate('/appeal')
+      } else {
+        navigate('/');
+      }
     } catch (error) {
       alert('Login failed. Please check your credentials and try again.');
     }

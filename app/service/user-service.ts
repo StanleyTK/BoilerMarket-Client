@@ -271,3 +271,55 @@ export async function getRecommended(
     const data: Listing[] = await response.json();
     return data;
 }
+
+
+export async function sendAppeal(
+    idToken: string,
+    userId: string,
+    appeal: string
+): Promise<boolean> {
+    try {
+        const response = await fetch(
+            `${import.meta.env.VITE_BASE_URL}/api/user/addAppeal/`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${idToken}`,
+                },
+                body: JSON.stringify({ userId, appeal }),
+            }
+        );
+        if (!response.ok) {
+            const errorData = await response.json();
+            const errorMessage = errorData?.message || "Unable to send appeal";
+            throw new Error(errorMessage);
+        }
+        return true;
+    } catch (error) {
+        console.error("Error sending appeal:", error);
+        return false;
+    }
+}
+
+
+export async function getBAndAStatus(
+    idToken: string,
+    userId: string
+): Promise<{ banned: boolean; appealPending: boolean }> {
+    const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/user/getBAndAStatus/${userId}/`,
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${idToken}`,
+            },
+        }
+    );
+    if (!response.ok) {
+        throw new Error("Unable to get B and A status");
+    }
+    const data = await response.json();
+    return data;
+}
