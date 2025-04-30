@@ -30,9 +30,11 @@ export async function getReports(idToken: string) {
           'Authorization': `Bearer ${idToken}`,
       },
   });
+  
 
   if (!response.ok) {
     const errorData = await response.json();
+    
     throw new Error(errorData?.error || "Failed to fetch reports");
   }
 
