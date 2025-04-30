@@ -12,7 +12,6 @@ export async function getConncetedUsers(idToken: string) {
     }
 
     const data = await response.json();
-
     return data["connected_users"];
 }
 
@@ -26,7 +25,7 @@ export async function isAdmin(idToken: string) {
     });
 
     if (response.status === 403) {
-        return false; // User is not an admin
+        return false;
     }
 
     if (!response.ok) {
@@ -82,4 +81,25 @@ export async function getHiddenListings(idToken: string) {
     }
     const data = await response.json();
     return data["hidden_listings"];
+}
+
+
+export async function banUser(idToken: string, reportedUid: string) {
+    const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/report/ban/${reportedUid}/`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+        }
+    );
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to ban user');
+    }
+
+    return response.json();
 }
