@@ -306,7 +306,7 @@ export async function sendAppeal(
 export async function getBAndAStatus(
     idToken: string,
     userId: string
-): Promise<{ banned: boolean; appealPending: boolean }> {
+): Promise<{ banned: boolean; appeal: boolean }> {
     const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/api/user/getBAndAStatus/${userId}/`,
         {

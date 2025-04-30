@@ -20,8 +20,10 @@ const LoginPage: React.FC = () => {
 
       const status = await getBAndAStatus(idToken, user.user.uid);
 
+      console.log('status', status);
+
       setUserBanned(status.banned);
-      setBanAppeal(status.appealPending);
+      setBanAppeal(status.appeal);
 
       if (status.banned) {
         navigate('/appeal')

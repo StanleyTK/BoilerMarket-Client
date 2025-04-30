@@ -14,13 +14,16 @@ const AppealPage: React.FC = () => {
     const [user] = useAuthState(auth);
 
     const handleSubmit = async () => {
-        if (appealMessage.trim() === '' && user) {
+        if (appealMessage.trim() != '' && user) {
             const currentUser = auth.currentUser;
             if (!currentUser) {
                 throw new Error("User not authenticated");
             }
             const idToken = await currentUser.getIdToken();
-            sendAppeal(idToken, user.uid, appealMessage)
+            const success = await sendAppeal(idToken, user.uid, appealMessage)
+            if (success) {
+                setBanAppeal(true);
+            }
         }
         setAppealMessage('');
     };
