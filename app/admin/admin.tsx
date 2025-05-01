@@ -1,15 +1,15 @@
 import { getApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, type ReactNode } from 'react';
 import {
   getActiveListings,
-  getConncetedUsers,
+  getConnectedUsers,
   getHiddenListings,
   getSoldListings,
   isAdmin,
-  banUser
 } from '~/service/admin-service';
 import { getReports, deleteReport } from '~/service/report-service';
+import { banUser, fetchAllBannedUsers, resolveAppeal, unbanUser } from '~/service/user-service';
 
 export interface Report {
   id: number;
@@ -23,12 +23,21 @@ export interface Report {
   dateReported: string;
 }
 
+export interface BannedUser {
+  username: ReactNode;
+  uid: string;
+  displayName: string;
+  appeal: string;
+  banAppeal: boolean;
+}
+
 const AdminDashboard: React.FC = () => {
   const [currentUsersOnline, setCurrentUsersOnline] = useState<number>(0);
   const [activeListings, setActiveListings] = useState<number>(0);
   const [soldListings, setSoldListings] = useState<number>(0);
   const [hiddenListings, setHiddenListings] = useState<number>(0);
   const [reports, setReports] = useState<Report[]>([]);
+  const [bannedUsers, setBannedUsers] = useState<BannedUser[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [userIsAdmin, setUserIsAdmin] = useState<boolean>(false);
@@ -57,18 +66,26 @@ const AdminDashboard: React.FC = () => {
       setLoading(true);
       try {
         const token = await authUser.getIdToken();
-        const [online, active, sold, hidden, allReports] = await Promise.all([
-          getConncetedUsers(token),
+        const [online, active, sold, hidden, allReports, allBannedUsers] = await Promise.all([
+          getConnectedUsers(token),
           getActiveListings(token),
           getSoldListings(token),
           getHiddenListings(token),
-          getReports(token)
+          getReports(token),
+          fetchAllBannedUsers(token)
         ]);
+
+        const updatedBannedUsers = allBannedUsers.map((user: any) => ({
+          ...user,
+          banAppeal: user.appeal && user.appeal.trim() !== ""
+        }));
+
         setCurrentUsersOnline(online);
         setActiveListings(active);
         setSoldListings(sold);
         setHiddenListings(hidden);
         setReports(allReports);
+        setBannedUsers(updatedBannedUsers);
       } catch (err: any) {
         console.error(err);
         setError(err.message || 'Failed to fetch data');
@@ -112,6 +129,34 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleUnban = async (reportedUid: string) => {
+    if (!authUser) return;
+    const token = await authUser.getIdToken();
+    try {
+      await unbanUser(token, reportedUid);
+      // Update state to remove the unbanned user
+      setBannedUsers(prev => prev.filter(user => user.uid !== reportedUid));
+      alert('User unbanned successfully');
+    } catch (e: any) {
+      console.error(e);
+      alert(`Unban failed: ${e.message}`);
+    }
+  };
+  
+
+  const handleResolveAppeal = async (uid: string) => {
+    if (!authUser) return;
+    const token = await authUser.getIdToken();
+    try {
+      await resolveAppeal(token, uid);
+      setBannedUsers(prev => prev.map(user => user.uid === uid ? { ...user, appeal: "" } : user));
+      alert('Appeal resolved successfully');
+    } catch (e: any) {
+      console.error(e);
+      alert(`Failed to resolve appeal: ${e.message}`);
+    }
+  };
+
   if (!userIsAdmin) return <div>You do not have permission to view this page.</div>;
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -147,6 +192,57 @@ const AdminDashboard: React.FC = () => {
           <StatCard title="Listings Sold" value={soldListings} />
           <StatCard title="Listings Hidden" value={hiddenListings} />
         </div>
+
+        {/* Banned Users Section */}
+        <div style={{ marginBottom: 40 }}>
+          <h2>Banned Users</h2>
+          {bannedUsers.length === 0 ? (
+            <p>No banned users.</p>
+          ) : (
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {bannedUsers.map(user => (
+                <li
+                  key={user.uid}
+                  style={{
+                    border: '1px solid #ccc',
+                    borderRadius: 6,
+                    padding: 12,
+                    marginBottom: 12,
+                    backgroundColor: '#fff',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  <p>ID: {user.uid}</p>
+                  <p>Username: {user.username}</p>
+                  {user.appeal && user.appeal !== "" && (
+                    <p style={{ marginTop: 6, color: '#666' }}><em>Appeal:</em> {user.appeal}</p>
+                  )}
+                  {(!user.appeal || user.appeal === "") && (
+                    <p style={{ marginTop: 6, color: '#666' }}><em>No appeal submitted.</em></p>
+                  )}
+                  {user.banAppeal && (
+                    <div>
+                      <button
+                        onClick={() => handleResolveAppeal(user.uid)}
+                        style={{ marginRight: 8, padding: '8px 12px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                      >
+                        Resolve Appeal
+                      </button>
+                      <button
+                        onClick={() => handleUnban(user.uid)}
+                        style={{ marginTop: 8, padding: '8px 12px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                      >
+                        Unban User
+                      </button>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Report details */}
         {selectedReported && (
           <div
             style={{
@@ -196,31 +292,14 @@ const AdminDashboard: React.FC = () => {
                 <p style={{ marginBottom: 8 }}>{r.description}</p>
                 <p style={{ marginBottom: 8 }}>User: {r.user_displayName} – {r.uid}</p>
                 <p style={{ marginBottom: 8 }}>Reported: {r.reported_displayName} – {r.reported_uid}</p>
-                <button
-                  onClick={() => handleDelete(r.id)}
-                  style={{
-                    padding: '6px 12px',
-                    border: 'none',
-                    borderRadius: 4,
-                    cursor: 'pointer',
-                    backgroundColor: '#d32f2f',
-                    color: '#fff',
-                    marginRight: 8
-                  }}
-                >
+                <p style={{ marginBottom: 0 }}>Date Reported: {r.dateReported}</p>
+                {r.listing && (
+                  <p style={{ marginTop: 8 }}>Related Listing ID: {r.listing.id}</p>
+                )}
+                <button onClick={() => handleDelete(r.id)} style={{ marginRight: 8, marginTop: 8, padding: '8px 12px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
                   Delete Report
                 </button>
-                <button
-                  onClick={() => handleBan(r.reported_uid)}
-                  style={{
-                    padding: '6px 12px',
-                    border: 'none',
-                    borderRadius: 4,
-                    cursor: 'pointer',
-                    backgroundColor: '#1976d2',
-                    color: '#fff'
-                  }}
-                >
+                <button onClick={() => handleBan(r.reported_uid)} style={{ marginTop: 8, padding: '8px 12px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
                   Ban User
                 </button>
               </div>
@@ -233,20 +312,9 @@ const AdminDashboard: React.FC = () => {
 };
 
 const StatCard: React.FC<{ title: string; value: number }> = ({ title, value }) => (
-  <div
-    style={{
-      border: '1px solid #ccc',
-      borderRadius: 8,
-      padding: 20,
-      textAlign: 'center',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-      flex: 1,
-      backgroundColor: '#fff',
-      color: '#333'
-    }}
-  >
-    <h2 style={{ margin: 0, marginBottom: 8 }}>{title}</h2>
-    <p style={{ margin: 0, fontSize: 24 }}>{value}</p>
+  <div style={{ flex: 1, padding: 20, backgroundColor: '#fff', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+    <h3 style={{ marginBottom: 10 }}>{title}</h3>
+    <div style={{ fontSize: '2rem' }}>{value}</div>
   </div>
 );
 

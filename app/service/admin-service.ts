@@ -1,4 +1,4 @@
-export async function getConncetedUsers(idToken: string) {
+export async function getConnectedUsers(idToken: string) {
     const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/user/getConnectedUsers`, {
         method: 'GET',
         headers: {
@@ -81,25 +81,4 @@ export async function getHiddenListings(idToken: string) {
     }
     const data = await response.json();
     return data["hidden_listings"];
-}
-
-
-export async function banUser(idToken: string, reportedUid: string) {
-    const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/api/report/ban/${reportedUid}/`,
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${idToken}`,
-            },
-        }
-    );
-
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to ban user');
-    }
-
-    return response.json();
 }
