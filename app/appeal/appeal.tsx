@@ -30,6 +30,7 @@ const AppealPage: React.FC = () => {
 
     return (
         <div className={`${theme === "dark" ? "dark-appeal-container" : "light-appeal-container"} min-h-screen`}>
+            <h1 className={`${theme === "dark" ? "dark-banned-title" : "light-banned-title"}`}>You are banned</h1>
             <h1 className={`${theme === "dark" ? "dark-appeal-title" : "light-appeal-title"}`}>Appeal Your Ban</h1>
             {banAppeal ? (
                 <p className={`${theme === "dark" ? "dark-appeal-text" : "light-appeal-text"}`}>
