@@ -12,6 +12,7 @@ import { useTheme } from "~/components/ThemeContext";
 import ReportCard from '~/components/ReportCard';
 import { ListingCard } from '~/components/ListingCard';
 import { unblockUser, fetchBlockedUsers } from "~/service/user-service"; 
+import { getAboutReviews } from "~/service/review-service";
 
 interface Listing {
   id: number;
@@ -33,6 +34,13 @@ interface Report {
   title: string;
   description: string;
   reported_uid: string;
+  uid: string;
+}
+
+interface Review {
+  comment: string;
+  reviewed_uid: string;
+  rating: number;
   uid: string;
 }
 
@@ -63,6 +71,24 @@ const UserProfile: React.FC = () => {
   const handleOpenReports = () => setShowReports(true);
   const handleCloseReports = () => setShowReports(false);
   const [reportsBy, setReportsBy] = useState<Report[]>([]);
+
+  const [showReviewPopup, setShowReviewPopup] = useState(false);
+  const [userReviews, setUserReviews] = useState<Review[]>([]);
+
+  const handleShowReviews = async () => {
+    if (!firebaseUser || !uidFromURL) return;
+  
+    try {
+      const idToken = await firebaseUser.getIdToken();
+      const reviews = await getAboutReviews(uidFromURL, idToken);
+      setUserReviews(reviews);
+      setShowReviewPopup(true);
+    } catch (error) {
+      console.error("Error fetching user reviews:", error);
+      alert("Failed to load reviews.");
+    }
+  };
+  
 
 
 
@@ -377,9 +403,17 @@ const UserProfile: React.FC = () => {
             )}
           </div>
 
-          <div className="flex items-center">
-            <span className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"} w-1/3 font-semibold`}>Rating:</span>
-            <span className="w-2/3">{user?.rating.toFixed(1)} ⭐</span>
+          <div
+            className="flex items-center cursor-pointer hover:underline"
+            onClick={handleShowReviews}
+            title="Click to view all reviews"
+          >
+            <span className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"} w-1/3 font-semibold`}>
+              Rating:
+            </span>
+            <span className="w-2/3">
+              {typeof user?.rating === "number" ? `${user.rating.toFixed(1)} ⭐` : "No rating"}
+            </span>
           </div>
 
           {user?.bio && (
@@ -558,6 +592,34 @@ const UserProfile: React.FC = () => {
         </div>
       )}
       
+      {showReviewPopup && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-lg max-w-lg w-full p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">User Reviews</h2>
+            <button
+              className="text-gray-600 hover:text-black text-2xl"
+              onClick={() => setShowReviewPopup(false)}
+            >
+              &times;
+            </button>
+          </div>
+          <div className="max-h-[400px] overflow-y-auto space-y-4">
+            {userReviews.length > 0 ? (
+              userReviews.map((review, index) => (
+                <div key={index} className="border border-gray-300 rounded p-4 shadow-sm">
+                  <div className="font-semibold mb-1">Rating: {review.rating} ⭐</div>
+                  <p className="text-gray-700">{review.comment}</p>
+                  <div className="text-sm text-gray-500 mt-2">Reviewed by: {review.uid}</div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500">No reviews found for this user.</p>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
         
       {/* Reports Section for Current User*/}
       {showReports && (
@@ -612,9 +674,8 @@ const UserProfile: React.FC = () => {
               : "You cannot view listings until you verify your email."}
           </p>
         )}
+        
     </div>
-
-    
   );
 };
 
