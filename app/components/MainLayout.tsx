@@ -37,6 +37,22 @@ export const useSearch = () => {
   return context;
 };
 
+interface BannedUserProps {
+  userBanned: boolean;
+  setUserBanned: React.Dispatch<React.SetStateAction<boolean>>;
+  banAppeal: boolean;
+  setBanAppeal: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const BannedUserContext = createContext<BannedUserProps | undefined>(undefined);
+
+export const useBannedUser = () => {
+  const context = useContext(BannedUserContext);
+  if (!context) {
+    throw new Error("useUserState must be used within a UserStateProvider");
+  }
+  return context;
+};
 
 const MainLayout: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,6 +63,8 @@ const MainLayout: React.FC = () => {
   const [dateFilter, setDateFilter] = useState('');
   const [priceFilter, setPriceFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
+  const [banAppeal, setBanAppeal] = useState(false);
+  const [userBanned, setUserBanned] = useState(false);
 
   const handleSearch = async () => {
     const auth = getAuth(getApp());
@@ -67,30 +85,33 @@ const MainLayout: React.FC = () => {
 
   return (
     <ThemeProvider>
-      <SearchContext.Provider value={{
-        searchQuery,
-        setSearchQuery,
-        listings,
-        setListings,
-        handleSearch,
-        sortBy,
-        setSortBy,
-        sortDirection,
-        setSortDirection,
-        categoryFilter,
-        setCategoryFilter,
-        priceFilter,
-        setPriceFilter,
-        dateFilter,
-        setDateFilter,
-        locationFilter,
-        setLocationFilter
-      }}>
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-800 text-black dark:text-white">
-          <Navbar />
-          <Footer />
-        </div>
-      </SearchContext.Provider>
+      <BannedUserContext.Provider value={{ userBanned, setUserBanned, banAppeal, setBanAppeal }}>
+        <SearchContext.Provider value={{
+          searchQuery,
+          setSearchQuery,
+          listings,
+          setListings,
+          handleSearch,
+          sortBy,
+          setSortBy,
+          sortDirection,
+          setSortDirection,
+          categoryFilter,
+          setCategoryFilter,
+          priceFilter,
+          setPriceFilter,
+          dateFilter,
+          setDateFilter,
+          locationFilter,
+          setLocationFilter
+        }}>
+
+          <div className="min-h-screen bg-gray-100 dark:bg-gray-800 text-black dark:text-white">
+            <Navbar />
+            <Footer />
+          </div>
+        </SearchContext.Provider>
+      </BannedUserContext.Provider>
     </ThemeProvider>
   );
 };

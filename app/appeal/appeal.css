@@ -1,0 +1,111 @@
+/* Light Mode */
+.light-appeal-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 1rem;
+    text-align: center;
+    background-color: #f9f9f9;
+}
+
+.light-appeal-title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.light-banned-title {
+    font-size: 3rem;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 20px;
+    color: red;
+    /* Adjust color as needed */
+}
+
+.light-appeal-textbox {
+    width: 80%;
+    max-width: 600px;
+    height: 150px;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: none;
+}
+
+.light-appeal-button {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.light-appeal-button:hover {
+    background-color: #0056b3;
+}
+
+
+
+/* Dark Mode */
+.dark-appeal-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 1rem;
+    text-align: center;
+    background-color: #333;
+}
+
+.dark-appeal-title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #f9f9f9;
+}
+
+.dark-banned-title {
+    font-size: 3rem;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 20px;
+    color: #ff6666;
+    /* Adjust color for dark mode */
+}
+
+.dark-appeal-textbox {
+    width: 80%;
+    max-width: 600px;
+    height: 150px;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #555;
+    border-radius: 4px;
+    resize: none;
+    background-color: #444;
+    color: #f9f9f9;
+}
+
+.dark-appeal-button {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    background-color: #0056b3;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.dark-appeal-button:hover {
+    background-color: #007bff;
+}
