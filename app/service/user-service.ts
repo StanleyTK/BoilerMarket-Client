@@ -1,6 +1,6 @@
 import { deleteUser, type User } from "firebase/auth";
 import type { UserProfileData, Listing } from "./types";
-import crypto from "crypto";
+
 
 export async function registerUser(uid: string, email: string, displayName: string, bio: string, idToken: string) {
     const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/user/create_user/`, {
@@ -323,3 +323,99 @@ export async function getBAndAStatus(
     const data = await response.json();
     return data;
 }
+
+
+
+
+export async function banUser(idToken: string, reportedUid: string) {
+    const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/report/ban/${reportedUid}/`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+        }
+    );
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to ban user');
+    }
+
+    return response.json();
+}
+
+
+export async function fetchAllBannedUsers(idToken: string) {
+    const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/user/getBannedUsersAndAppeals/`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+        }
+    );
+
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to ban user');
+    }
+
+    return response.json();
+}
+
+
+
+export async function unbanUser(idToken: string, userId: string) {
+    const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/user/unban_user/`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ userId }),
+
+        }
+    );
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to ban user');
+    }
+
+    return response.json();
+}
+
+
+
+export async function resolveAppeal(idToken: string, userId: string) {
+    const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/user/resolveAppeal/`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ userId }),
+
+
+        }
+    );
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to ban user');
+    }
+
+    return response.json();
+}
+
+
