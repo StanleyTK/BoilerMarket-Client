@@ -17,6 +17,7 @@ const LoginPage: React.FC = () => {
       const user = await authService.login(email, password);
       const idToken = await user.user.getIdToken();
       console.log('token', idToken);
+      console.log('user', user.user.uid);
 
       const status = await getBAndAStatus(idToken, user.user.uid);
 

@@ -16,6 +16,15 @@
     color: #333;
 }
 
+.light-banned-title {
+    font-size: 3rem;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 20px;
+    color: red;
+    /* Adjust color as needed */
+}
+
 .light-appeal-textbox {
     width: 80%;
     max-width: 600px;
@@ -61,6 +70,15 @@
     font-size: 2rem;
     margin-bottom: 1rem;
     color: #f9f9f9;
+}
+
+.dark-banned-title {
+    font-size: 3rem;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 20px;
+    color: #ff6666;
+    /* Adjust color for dark mode */
 }
 
 .dark-appeal-textbox {
