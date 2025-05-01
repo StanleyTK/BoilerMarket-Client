@@ -612,9 +612,8 @@ const UserProfile: React.FC = () => {
               : "You cannot view listings until you verify your email."}
           </p>
         )}
+        
     </div>
-
-    
   );
 };
 
