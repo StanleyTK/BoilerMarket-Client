@@ -1,4 +1,5 @@
 // src/pages/ListingPage.tsx
+
 import React, {
   useEffect,
   useState,
@@ -24,6 +25,8 @@ import {
 import { getApp } from "firebase/app";
 import { createRoom } from "~/service/chat-service";
 
+import { createReview, getAboutReviews } from "~/service/review-service";
+import { getUser } from "~/service/user-service";
 /* ---------- types ---------- */
 interface Listing {
   views: ReactNode;
@@ -75,6 +78,12 @@ const ListingPage: React.FC = () => {
   const [mediaIndex, setMediaIndex] = useState(0);
   const [saveCount, setSaveCount] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [rating, setRating] = useState<number | null>(null);
+  const [comment, setComment] = useState("");
+
+  const [userRating, setUserRating] = useState<number | null>(null);
+
 
   const navigate = useNavigate();
   const hasIncremented = useRef(false);
@@ -129,6 +138,22 @@ const ListingPage: React.FC = () => {
 
     fetchListingData();
   }, [lidFromURL, authUser]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!showReviewModal || !authUser || !listing) return;
+  
+      try {
+        const user = await getUser(listing.uid);
+        setUserRating(user.rating); 
+        console.log(user.rating)
+      } catch (err) {
+        console.error("Failed to fetch user:", err);
+      }
+    };
+  
+    fetchUser();
+  }, [showReviewModal]);
 
   /* ---------- handlers ---------- */
   const mediaLength = listing?.media?.length || 0;
@@ -288,20 +313,103 @@ const ListingPage: React.FC = () => {
                     </div>
                   )}
                 </div>
+                
                 <span className="text-lg font-semibold text-gray-100">
                   {listing.displayName || "Unknown Seller"}
                 </span>
               </Link>
-              <button
-                onClick={() => handleCreateChat(listing.id, navigate)}
-                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
-              >
-                Message Seller
-              </button>
+              {authUser && (
+              <>
+                <button
+                  onClick={() => handleCreateChat(listing.id, navigate)}
+                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
+                >
+                  Message Seller
+                </button>
+                <button
+                  onClick={() => setShowReviewModal(true)}
+                  className="mt-2 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
+                >
+                  Review Seller
+                </button>
+              </>
+            )}
             </div>
           </div>
         </div>
       </div>
+      {showReviewModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-lg relative">
+      {/* Close Button */}
+      <button
+        onClick={() => setShowReviewModal(false)}
+        className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+      >
+        ✕
+      </button>
+
+      <h2 className="text-2xl font-semibold mb-4 text-gray-800">Leave a Review</h2>
+
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (!authUser || !rating || !comment || !listing) return;
+        
+          try {
+            const idToken = await authUser.getIdToken();
+            await createReview(idToken, authUser.uid, listing.uid, comment, rating);
+            alert("Review submitted!");
+          } catch (err) {
+            console.error("Failed to submit review:", err);
+            alert("Error submitting review.");
+          } finally {
+            setShowReviewModal(false);
+            setRating(null);
+            setComment("");
+          }
+        }}
+        className="flex flex-col gap-4"
+      >
+        {/* Rating */}
+        <label className="text-sm text-gray-700 font-medium">
+          Rating:
+          <select
+            required
+            value={rating ?? ""}
+            onChange={(e) => setRating(Number(e.target.value))}
+            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2"
+          >
+            <option value="">Select a rating</option>
+            {[1, 2, 3, 4, 5].map((n) => (
+              <option key={n} value={n}>{n} Star{n > 1 ? "s" : ""}</option>
+            ))}
+          </select>
+        </label>
+
+        {/* Comments */}
+        <label className="text-sm text-gray-700 font-medium">
+          Comments:
+          <textarea
+            required
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            rows={4}
+            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 resize-none"
+          />
+        </label>
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          className="bg-green-500 text-white py-2 rounded hover:bg-green-600 transition"
+        >
+          Submit Review
+        </button>
+      </form>
+    </div>
+  </div>
+)}
     </div>
   );
 };
