@@ -4,6 +4,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { getAuth, signOut } from "firebase/auth";
 import { getApp } from "firebase/app";
 import { useSearch } from "./MainLayout";
+import { useBannedUser } from "./MainLayout";
 import { isAdmin } from "../service/admin-service";
 
 const Navbar: React.FC = () => {
@@ -15,6 +16,7 @@ const Navbar: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { searchQuery, setSearchQuery, handleSearch } = useSearch();
   const [userIsAdmin, setUserIsAdmin] = useState(false);
+  const { userBanned } = useBannedUser();
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -75,6 +77,10 @@ const Navbar: React.FC = () => {
   };
 
   const handleSearchSubmit = async (event: React.FormEvent) => {
+    if (userBanned) {
+      navigate("/appeal");
+      return;
+    }
     event.preventDefault();
     if (location.pathname !== "/search") {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
@@ -89,7 +95,7 @@ const Navbar: React.FC = () => {
         <div className="flex items-center">
           <div
             className="flex items-center cursor-pointer"
-            onClick={() => navigate("/")}
+            onClick={() => { userBanned ? navigate("/appeal") : navigate("/") }}
           >
             <img src="/logo.png" alt="BoilerMarket Logo" className="h-12 mr-2" />
             <span className="text-xl font-bold">BoilerMarket</span>
@@ -127,11 +133,11 @@ const Navbar: React.FC = () => {
 
         {/* Right Section: Profile & Dropdown Menu */}
         <div className="flex items-center space-x-4">
-            {userIsAdmin && (
+          {userIsAdmin && (
             <button onClick={handleAdminClick} className="font-semibold hover:underline">
               Admin Analytics
             </button>
-            )}
+          )}
           <button onClick={handleProfileClick} className="font-semibold hover:underline">
             View My Profile
           </button>
