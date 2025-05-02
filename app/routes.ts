@@ -14,6 +14,7 @@ export default [
     route("search", "./search/search.tsx"),
     route("u/:uid/createlisting", "./create_listing/create_listing.tsx"),
     route("about", "./about/about.tsx"),
+    route("guide", "./guide/guide.tsx"),
     route("inbox/:rid?", "./inbox/inbox.tsx"),
     route("admin", "./admin/admin.tsx"),
     route("appeal", "./appeal/appeal.tsx"),

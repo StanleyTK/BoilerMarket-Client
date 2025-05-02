@@ -181,7 +181,13 @@ const Navbar: React.FC = () => {
                 onClick={() => navigate("/about")}
                 className="block w-full text-left px-4 py-2 hover:bg-gray-400"
               >
-                About us
+                About Us
+              </button>
+              <button
+                onClick={() => navigate("/guide")}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-400"
+              >
+                Website Guide
               </button>
             </>
           ) : (
@@ -202,7 +208,13 @@ const Navbar: React.FC = () => {
                 onClick={() => navigate("/about")}
                 className="block w-full text-left px-4 py-2 hover:bg-gray-400"
               >
-                About us
+                About Us
+              </button>
+              <button
+                onClick={() => navigate("/guide")}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-400"
+              >
+                Website Guide
               </button>
             </>
           )}
