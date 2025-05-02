@@ -75,6 +75,9 @@ const UserProfile: React.FC = () => {
   const [showReviewPopup, setShowReviewPopup] = useState(false);
   const [userReviews, setUserReviews] = useState<Review[]>([]);
 
+  const [alsoBlockUser, setAlsoBlockUser] = useState(false);
+
+
   const handleShowReviews = async () => {
     if (!firebaseUser || !uidFromURL) return;
   
@@ -550,7 +553,17 @@ const UserProfile: React.FC = () => {
               className="w-full border border-gray-300 rounded px-3 py-2 h-24"
               placeholder="Provide more details..."
             />
-
+            <div className="mt-4">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                checked={alsoBlockUser}
+                onChange={(e) => setAlsoBlockUser(e.target.checked)}
+                className="form-checkbox text-red-500"
+              />
+              <span className="ml-2 text-sm text-gray-700"> Block this user</span>
+            </label>
+          </div>
             <div className="mt-4 flex justify-end gap-3">
               <button
                 onClick={() => setShowReportPopup(false)}
@@ -565,17 +578,29 @@ const UserProfile: React.FC = () => {
                   setIsSubmittingReport(true);
                   try {
                     const idToken = await firebaseUser.getIdToken();
+                
+                    // Submit report
                     await createReport(
-                        idToken,
-                        firebaseUser.uid,
-                        uidFromURL!,
-                        reportTitle.trim(),
-                        reportDescription.trim(),
+                      idToken,
+                      firebaseUser.uid,
+                      uidFromURL!,
+                      reportTitle.trim(),
+                      reportDescription.trim()
                     );
-                    alert(`${user?.displayName || "User"} has been reported.`);
+                
+                    // Optionally block user
+                    if (alsoBlockUser) {
+                      await blockUser(uidFromURL!, idToken);
+                    }
+                
+                    alert(`${user?.displayName || "User"} has been reported${alsoBlockUser ? " and blocked." : "."}`);
                     setShowReportPopup(false);
                     setReportTitle("");
                     setReportDescription("");
+                    setAlsoBlockUser(false);
+                
+                    // Redirect if blocked
+                    if (alsoBlockUser) navigate("/");
                   } catch (err) {
                     console.error(err);
                     alert("Failed to report user: " + (err as Error).message);
