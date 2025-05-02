@@ -297,7 +297,7 @@ const AdminDashboard: React.FC = () => {
                   <p style={{ marginTop: 8 }}>Related Listing ID: {r.listing.id}</p>
                 )}
                 <button onClick={() => handleDelete(r.id)} style={{ marginRight: 8, marginTop: 8, padding: '8px 12px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
-                  Delete Report
+                  Resolve Report
                 </button>
                 <button onClick={() => handleBan(r.reported_uid)} style={{ marginTop: 8, padding: '8px 12px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
                   Ban User
